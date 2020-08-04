@@ -282,6 +282,13 @@ class Utils:
 								raise Exception("Filter {} didn't implemented yet!".format(objs[obj]['/Filter']))
 					else:
 						raise Exception("Filter {} didn't implemented yet!".format(objs[obj]['/Filter']))
+
+	@staticmethod
+	def getEncodeFile(filename):
+		import chardet
+		with open(filename, 'rb') as file:
+			raw = file.read(32)
+		return chardet.detect(raw)['encoding']
 # END UTILS #
 #############
 
@@ -628,9 +635,15 @@ class LaTeX:
 	proc_out = None
 	img_counter = 0
 
-	def __init__(self, sufix_temp_dir=""):
+	def __init__(self, sufix_temp_dir="", temporary_directory=None):
 		import os, tempfile, collections
-		self.temp_dir = tempfile.TemporaryDirectory(prefix=os.path.splitext(os.path.basename(__file__))[0], suffix=sufix_temp_dir)
+		
+		if temporary_directory is None:
+			self.tempfile_TemporaryDirectory = tempfile.TemporaryDirectory(prefix=os.path.splitext(os.path.basename(__file__))[0], suffix=sufix_temp_dir)
+			self.temp_dir = self.tempfile_TemporaryDirectory.name
+		else:
+			self.temp_dir = tempfile.mkdtemp(prefix=os.path.splitext(os.path.basename(__file__))[0], suffix=sufix_temp_dir, dir=os.path.join(os.path.dirname(os.path.realpath('__file__')), temporary_directory))
+
 		self.replaces = collections.OrderedDict()
 		self.includes = []
 		self.tex      = []
@@ -654,7 +667,7 @@ class LaTeX:
 		# Make an unique path to image file
 		while(True):
 			file_name = prefix + str(self.img_counter) + sufix + extension
-			full_path = os.path.join(self.temp_dir.name,file_name)
+			full_path = os.path.join(self.temp_dir,file_name)
 			# If already exist, try other...
 			if os.path.exists(full_path): self.img_counter += 1
 			else:                         break
@@ -688,7 +701,7 @@ class LaTeX:
 
 	def makePdf(self, output, verbose=True):
 		self.proc_out = ""
-		for l in LaTeX.latex2pdf(self.tex, output, includes=self.includes, tmp_dir=self.temp_dir.name):
+		for l in LaTeX.latex2pdf(self.tex, output, includes=self.includes, tmp_dir=self.temp_dir):
 			self.proc_out += l
 			yield l
 
@@ -756,7 +769,8 @@ class LaTeX:
 		# Check return
 		return_code = proc.wait()
 		if return_code:
-			raise subprocess.CalledProcessError(proc.returncode, proc.args)
+			log = open(filename + '.log').read()
+			raise subprocess.CalledProcessError(proc.returncode, proc.args, log)
 
 		# Move output file
 		if os.path.isfile(filename + '.pdf'):
@@ -1623,9 +1637,11 @@ class Main:
 	verbose      = None # Verbose, from 0 to 3
 	selected     = None # Selected questions group
 	correction   = None # Correction Manager Class, used to save corrections
+	temp_dir     = None # If not None, specifies a temporary directory and don't delete it.
 
-	def __init__(self, config_file=None, config_default=None, verbose=0):
+	def __init__(self, config_file=None, config_default=None, verbose=0, temp_dir=None):
 		self.verbose = verbose
+		self.temp_dir = temp_dir
 
 		# READ CONFIG.JSON
 		if config_default is not None:
@@ -1643,7 +1659,8 @@ class Main:
 		try: # READ STUDENTS.CSV
 			import csv
 			self.students = []
-			with open(self.config['input']['filename'], 'r') as f:
+			encode = Utils.getEncodeFile(self.config['input']['filename'])
+			with open(self.config['input']['filename'], 'r', encoding=encode) as f:
 				from collections import OrderedDict
 				reader = csv.DictReader(f, delimiter=self.config['input']['delimiter'], quotechar=self.config['input']['quotechar'])
 				for line in reader:
@@ -1741,7 +1758,7 @@ class Main:
 
 	def makeTests(self):
 		# Initiate output tests
-		tex = LaTeX(sufix_temp_dir="Tests")
+		tex = LaTeX(sufix_temp_dir="Tests", temporary_directory=self.temp_dir)
 		tex.addReplaces({self.config['tex']['question_total']: str(len(self.selected))})
 		tex.addReplaces(self.config['tex']['replaces'])
 		for i in self.config['tex']['includes']:
@@ -1749,13 +1766,17 @@ class Main:
 		tex.addTex(self.config['tex']['preamble'])
 
 		#Initiate output template
-		template = LaTeX(sufix_temp_dir="Template")
+		template = LaTeX(sufix_temp_dir="Template", temporary_directory=self.temp_dir)
 		template.addReplaces({self.config['tex']['question_total']: str(len(self.selected))})
 		template.addReplaces(self.config['tex']['replaces'])
 		for i in self.config['tex']['includes']:
 			template.addInclude(i)
 		template.addTex(self.config['tex']['preamble'])
 		template.addTex(self.config['tex']['template']['header'])
+
+		if self.verbose > 2:
+			print("Temporary Directory (Tests):    {}".format(tex.temp_dir))
+			print("Temporary Directory (Template): {}".format(template.temp_dir))
 
 		if self.verbose > 1: print("There is {} students:".format(len(self.students)))
 
@@ -1848,8 +1869,9 @@ class Main:
 			if self.verbose > 0:
 				print("PDF '{}' generated.".format(self.config['output']['tests']))
 		except CalledProcessError as e:
-			if self.verbose > 1: raise Exception(tex.getError())
-			else:                raise Exception("Error to genereate {}". format(self.config['output']['tests']))
+			if   self.verbose > 2: raise Exception(tex.getError() + "\n\noutput.log:\n===========\n\t" + e.output.replace("\n", "\n\t"))
+			elif self.verbose > 1: raise Exception(tex.getError())
+			else:                  raise Exception("Error to genereate {}". format(self.config['output']['tests']))
 		except UnicodeDecodeError as e:
 			if self.verbose > 1: raise Exception(e.args)
 			else:                raise Exception("Error to genereate {}". format(self.config['output']['tests']))
@@ -2069,125 +2091,6 @@ class Main:
 				cv2.imshow("Press 'space' to next image...", ImageUtils.conditionalResize(i))
 				if cv2.waitKey(0) & 0xFF == ord(' '):
 					continue
-
-	def sendFeedbackMail(self):
-		import smtplib
-		from email.mime.application import MIMEApplication
-		from email.mime.multipart import MIMEMultipart
-		from email.utils import COMMASPACE, formatdate
-		from email.mime.text import MIMEText
-
-		# Setup SMTP server
-		smtp = smtplib.SMTP(self.config['email']['SMTP_server'], int(self.config['email']['SMTP_port']))
-		smtp.starttls()
-		import getpass
-		password = getpass.getpass("Please, enter your SMTP password:")
-		smtp.login(self.config['email']['SMTP_login'], password)
-
-		# Send an email for each student
-		yes = False
-		for s in self.students:
-			if self.verbose > 2:
-				print("Processing student ", end="")
-				for k, v in s.items():
-					print("{}: {} ".format(k,v), end="")
-				print("")
-
-			# Make MIME message
-			msg = MIMEMultipart()
-			msg['From'] = self.config['email']['sender']
-			msg['To']   = s[self.config['email']['email_id']]
-			msg['Date'] = formatdate(localtime=True)
-
-			# Get scores of student
-			score = self.correction.findStudent(s)
-
-			# If the student has a final score
-			if score[self.correction.headerLabels['final']] is not None and score[self.correction.headerLabels['final']] != '':
-				if self.verbose > 2:
-					print("... there is a final score!")
-
-				# Put subject and message with replaces
-				msg_text = "\n".join(self.config['email']['present']['message'])
-				msg_subject = self.config['email']['present']['subject']
-				for k,v in s.items():
-					msg_text = msg_text.replace(k, v)
-					msg_subject = msg_subject.replace(k, v)
-				msg_text = msg_text.replace(self.config['email']['final_score_id'], score[self.correction.fieldnames_final[0]])
-				msg_subject = msg_subject.replace(self.config['email']['final_score_id'], score[self.correction.fieldnames_final[0]])
-				score_txt = "{}: {} (".format(self.correction.fieldnames_final[0],score[self.correction.fieldnames_final[0]])
-				for k in range(len(self.correction.fieldsname_quest)):
-					key = self.correction.fieldsname_quest[k]
-					score_txt += "{}: {}{}".format(key, score[key], ", " if k < len(self.correction.fieldsname_quest)-1 else ")")
-				msg_text = msg_text.replace(self.config['email']['score_details_id'], score_txt)
-				msg_subject = msg_subject.replace(self.config['email']['score_details_id'], score_txt)
-				for k,v in self.config['tex']['replaces'].items():
-					msg_text = msg_text.replace(k,v)
-					msg_subject = msg_subject.replace(k,v)
-				msg['Subject'] = msg_subject
-				msg.attach(MIMEText(msg_text))
-
-				# Attach all feedbacks
-				full_path, full_path_student = self.makeDirectoryForAStrudent(s)
-				import os
-				for f in os.listdir(full_path_student):
-					file = os.path.join(full_path_student, f)
-					with open(file, "rb") as fil:
-						part = MIMEApplication(
-							fil.read(),
-							Name=os.path.basename(file)
-						)
-					part['Content-Disposition'] = 'attachment; filename="%s"' % os.path.basename(f)
-					msg.attach(part)
-
-			# If the student don't have a final score
-			elif self.config['email']['absent']['subject'] != "" and self.config['email']['absent']['message'] != "":
-				if self.verbose > 2:
-					print("... there is not a final score. Send an absent email...")
-
-				# Put subject and message with replaces
-				msg_text = "\n".join(self.config['email']['absent']['message'])
-				msg_subject = self.config['email']['absent']['subject']
-				for k,v in s.items():
-					msg_text = msg_text.replace(k, v)
-					msg_subject = msg_subject.replace(k, v)
-				for k,v in self.config['tex']['replaces'].items():
-					msg_text = msg_text.replace(k,v)
-					msg_subject = msg_subject.replace(k,v)
-				msg['Subject'] = msg_subject
-				msg.attach(MIMEText(msg_text))
-
-			# If absent's message or subject is empty, just ignore...
-			else:
-				if self.verbose > 2:
-					print("... there is not a final score. Ignore it!")
-				continue
-
-			send_mail = yes
-			if not yes:
-				if self.verbose > 2:
-					print("Subject: " + msg_subject)
-					print("Message:\n" + msg_text)
-				reply = str(input("Send email to '{}' ({}={})? [y/n/a]".format(s[self.config['email']['email_id']], self.correction.headerLabels['final'], score[self.correction.headerLabels['final']]))).lower().strip()
-				if reply == 'y':
-					send_mail = True
-				elif reply == 'a':
-					yes = True
-					send_mail = True
-
-			# Send email
-			if send_mail:
-				if self.verbose > 0:
-					print("Send mail to {} (".format(msg['To']), end="")
-					for k in self.correction.fieldnames_id:
-						print("{}: {}{}".format(k, score[k], ", " if k!=self.correction.fieldnames_id[-1] else ")\n"), end="")
-					if self.verbose > 1:
-						print("\t", end="")
-						for k in self.correction.fieldnames[len(self.correction.fieldnames_id):]:
-							print("{}: {}{}".format(k, score[k], ", " if k!=self.correction.fieldnames[-1] else "\n"), end="")
-				smtp.sendmail(msg['From'],msg['To'], msg.as_string())
-
-		smtp.close()
 # MAIN #
 ########
 
@@ -2200,10 +2103,10 @@ def main():
 		parser.add_argument("-v", "--verbose", default=1, action="count", help="Increase output verbosity (most verbose: -vv).")
 		parser.add_argument("-s", "--silent", action="store_true", help="Enable silent mode (disable almost all output).")
 		parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode (show many windows and information).")
+		parser.add_argument("-t", "--temporary_dir", type=str, nargs=1, help="Directory used by temporary dirs/files. If not used, a temporary directory will be created and deleted in sequence.")
 		parser.add_argument("config_file", default="config.json", type=str, nargs='?', help="Configure file input (JSON format).")
 		parser.add_argument("-w", "--webcam", choices=range(10), type=int, nargs=1, help="Use webcam with ID.")
 		parser.add_argument("-p", "--pdf", type=str, nargs=1, help="PDF file with all scanned tests to correct it.")
-		parser.add_argument("-m", "--mail", action="store_true", help="Send feedback corretion by email.")
 		parser.add_argument("-e", "--examples", type=str, choices=[k for k,_ in sorted(examples.items(), key=lambda t: t[0])], help="Echo an example.")
 		args = parser.parse_args()
 
@@ -2242,14 +2145,12 @@ Quit       q     Quit pdb abruptly
 				os.execl(sys.executable, sys.executable, '-OO', *sys.argv)
 				return
 
-		m = Main(config_file=args.config_file,config_default=examples['config'],verbose=args.verbose)
+		m = Main(config_file=args.config_file,config_default=examples['config'],verbose=args.verbose,temp_dir= None if args.temporary_dir is None else args.temporary_dir[0])
 
 		if args.webcam:
 			m.camera(args.webcam[0])
 		elif args.pdf:
 			m.readPDF(args.pdf[0])
-		elif args.mail:
-			m.sendFeedbackMail()
 		else:
 			m.makeTests()
 
@@ -2317,39 +2218,6 @@ examples = {'config': r'''
 			"    if pts >= v: return k"
 		]
 	},
-	"email": {
-		"email_id": "%EMAIL%",
-		"SMTP_server": "smtp.server.com",
-		"SMTP_port": "587",
-		"SMTP_login": "login@server.com",
-		"sender": "email@server.com",
-		"final_score_id": "%SCORE%",
-		"score_details_id": "%SCORE_DETAILS%",
-		"present": {
-			"subject": "Your %TEST_NAME%'s score in %COURSE% was %SCORE%!",
-			"message": [
-				"Hi %NAME%!",
-				"",
-				"   Your score in %TEST_NAME% em %COURSE%, on %DATE%, was %SCORE%.",
-				"",
-				"    %SCORE_DETAILS%.",
-				"",
-				"    In attachment, more details about your score.",
-				"",
-				"    Prof. %PROFESSOR%"
-			]
-		},
-		"absent": {
-			"subject": "Abssent in  %COURSE%'s %TEST_NAME%!",
-			"message": [
-				"Hi %NAME%!",
-				"",
-				"   You didn't make %TEST_NAME% from %COURSE%, on %DATE%!",
-				"",
-				"    Prof. %PROFESSOR%"
-			]
-		}
-	},
 	"tex": {
 		"max_pages"                                                     : 4,
 		"qrcode_id_must_be_concatenated_with_dash_plus_the_page_number" : "%QRCODE_ID%",
@@ -2374,8 +2242,6 @@ examples = {'config': r'''
 			"%ANSWER_AREA_BEFORE%": "\\textbf{Answer of question %COUNT%:}",
 			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Attention:}} Completely fill in the corresponding circles and do not shave!",
 			"%TEMPLATE_LABEL%": "Template"
-
-
 		},
 		"includes": [
 //			"image directory path"
