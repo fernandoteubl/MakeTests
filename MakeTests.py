@@ -64,11 +64,10 @@ try:
 	import conda, pip, cv2, qrcode, pyzbar, barcode, PyPDF2, pytesseract, screeninfo
 except ImportError as error:
 	if error.name == "conda":
-		sys.exit("Please, install conda (https://www.anaconda.com/download).")
+		sys.exit("Please, install anaconda3 (https://www.anaconda.com/download) or miniconda3 (https://docs.conda.io/en/latest/miniconda.html).")
 	else:
 		package_name = {"pip":         ["conda", "install", "-c", "anaconda",    "pip"],
-#                        "cv2":         ["conda", "install", "-c", "menpo",       "opencv3"],
-                        "cv2":         ["pip",   "install",                      "opencv-python"],
+#                        "cv2":         ["pip",   "install",                      "opencv-contrib-python"], # Error: conflict with conda's QT
                         "qrcode":      ["conda", "install", "-c", "conda-forge", "qrcode"],
                         "PyPDF2":      ["conda", "install", "-c", "conda-forge", "pypdf2"],
                         "tesseract":   ["conda", "install", "-c", "conda-forge", "tesseract"],
@@ -76,6 +75,11 @@ except ImportError as error:
                         "barcode":     ["pip",   "install",                      "python-barcode"],
                         "pytesseract": ["pip",   "install",                      "pytesseract"],
                         "screeninfo":  ["pip",   "install",                      "screeninfo"]}
+		if cur_version < (3,7):
+			package_name["cv2"] = ["conda", "install", "-c", "menpo",       "opencv3"]
+		else:
+			package_name["cv2"] = ["conda", "install", "-c", "anaconda",     "opencv"]
+
 		print(error.msg)
 		if error.name not in package_name:
 			sys.exit("Please, install {} library...".format(error.name))
@@ -687,7 +691,9 @@ class LaTeX:
 			except AttributeError:
 				import cv2
 				try: # OpenCV Image?
-					cv2.imwrite(full_path, img)
+					isWritten = cv2.imwrite(full_path, img)
+					if not isWritten:
+						raise Exception("LaTeX.addImage can't write opencv image: {}".format(img))
 				except TypeError as e:
 					try: # matplotlib.pyplot?
 						img.savefig(full_path)
@@ -764,6 +770,8 @@ class LaTeX:
 			f.close()
 
 		# Compile LaTeX
+		import time
+		time.sleep(1) # BUG: Sometimes the image is not ready (flushed). Specific case: AnswerArea.png
 		cmd = [ "pdflatex", "-halt-on-error", "-file-line-error", "-output-format=pdf", filename + '.tex' ]
 		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
@@ -1406,7 +1414,7 @@ class QuestionsDB:
 		self.questions = Utils.loadModules(base_path)
 		self.salt      = salt
 
-	def getQuestions(self, selected_groups, uniqueid=None, **args_to_question):
+	def getQuestions(self, selected_groups, uniqueid=None, instantiate_module_callback=None, **args_to_question):
 		import random
 		if uniqueid is None:
 			uniqueid = self.generateUniqueId(**args_to_question)
@@ -1435,6 +1443,8 @@ class QuestionsDB:
 				raise Exception("There is no more questions in '{}'".format(grp))
 			question = QuestionsDB.instantiateQuestion(listQuest[grp][0][1], **args_to_question)
 			if question is not None:
+				if instantiate_module_callback is not None:
+					instantiate_module_callback(question)
 				random.seed(uniqueid)
 				question.makeVariables() #Shuffle variables
 				result.append(question)
@@ -1797,13 +1807,13 @@ class Main:
 				print("\rThere is {} students:\t[{:.0f}%]".format(len(self.students), 100*student_idx/len(self.students)), end="")
 				sys.stdout.flush()
 
-			# Get questions for a specifi student s
-			questions, uniqueid = self.questionsDB.getQuestions(self.selected, uniqueid=None, **student)
-			if self.verbose > 2: print("\t\tLoaded {} questions:".format(len(questions)))
+			# Call when instantiate question module.
+			def instantiateQuestion(question):
+				question.addImage = tex.addImage
 
-			# Insert tex.addImage method into question
-			for q in questions:
-				q.addImage = tex.addImage
+			# Get questions for a specifi student s
+			questions, uniqueid = self.questionsDB.getQuestions(self.selected, uniqueid=None, instantiate_module_callback=instantiateQuestion, **student)
+			if self.verbose > 2: print("\t\tLoaded {} questions:".format(len(questions)))
 
 			# Update student info in LaTeX macro
 			tex.addReplaces(student)
@@ -2405,14 +2415,17 @@ examples = {'config': r'''
 	}
 }
 '''
-, 'assay': r"""
+, 'essay': r"""
 from MakeTests import QuestionEssay
-class QualquerNome(QuestionEssay):
+class EssayQuestion(QuestionEssay):
+	q_subject = None
 	def makeVariables(self):
-		self.setLabels(scores=["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F+", "F", "F-"], blank_warning="--- Deixar em branco! ---")
+		self.setLabels(scores=["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F+", "F", "F-"], blank_warning="--- Leave it blank! ---")
+		import random
+		self.q_subject = random.choice(["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"])
 	def getQuestionTex(self):
-		tex = '''Esta é uma questão dissertativa.
-'''
+		tex = '''About our solar system, describe the characteristics of planet {}.
+'''.format(self.q_subject)
 		lines_answer_area = 10
 		tex += "\n\n\\begin{tabularx}{\\textwidth}{|X|}\\hline"
 		for l in range(lines_answer_area): tex += (" \\\\")
@@ -2422,138 +2435,158 @@ class QualquerNome(QuestionEssay):
 		return ""
 """
 , 'choices': r"""
+
 from MakeTests import QuestionMultipleChoice
-class QualquerNome(QuestionMultipleChoice):
+class MultipleChoiceQuestion(QuestionMultipleChoice):
 	def makeSetup(self):
 		import random
-		questFacil = [
-			{  "statement": "Enunciado Facil 1.", "alternatives": sorted([
-				["Correta", True],
-				["Errada", False],
-				["Errada", False],
-				["Errada", False],
+		import numpy as np
+
+		# Question 1 using MATPLOTLIB
+		import matplotlib.pyplot as plt
+		q1var = sorted([ ["$\\sin()$", False, np.sin], ["$\\cos()$", False, np.cos], ["$\\tan()$", False, np.tan], ["$\\arctan()$", False, np.arctan] ], key=lambda k: random.random()); q1var[0][1] = True
+		x = np.arange(0,2*np.pi,0.1); y = q1var[0][2](x)
+		plt.clf(); plt.plot(x,y); im_path = self.addImage(plt)
+		quest1 = {  "statement": '''Which function corresponds to the graph below?
+\\begin{{center}} \\includegraphics[width=0.2\\textwidth]{{{im}}} \\end{{center}}
+'''.format(im=im_path), "alternatives": sorted(q1var, key=lambda k: random.random()), "itensPerRow":4 }
+
+		# Question 2 using OpenCV
+		import cv2
+		q2var = sorted([ ["Square", False, [(10,10), (90,10), (90,90), (10,90)] ], ["Parallelogram", False, [(10,10), (75,10), (90,90), (25,90)] ], ["Trapezium", False, [(10,10), (90,10), (75,90), (25,90)] ], ["Rectangle", False, [(10,25), (90,25), (90,75), (10,75)] ] ], key=lambda k: random.random()); q1var[0][1] = True
+		cv_img = np.zeros((100,100,3), np.uint8); cv_img[:,:] = (255,255,255)
+		for i in range(len(q2var[0][2])):
+			cv2.line(img=cv_img, pt1=q2var[0][2][i], pt2=q2var[0][2][(i+1) % len(q2var[0][2])], color=(0,0,0), thickness=1, lineType=8, shift=0)
+		im_path = self.addImage(cv_img)
+		quest2 = {  "statement": '''What is the shape of the quadrilateral below?
+\\begin{{center}} \\includegraphics[width=0.1\\textwidth]{{{im}}} \\end{{center}}
+'''.format(im=im_path), "alternatives": sorted(q2var, key=lambda k: random.random()), "itensPerRow":4 }
+
+		# Question 3 using PILLOW
+		from PIL import Image
+		q3var = sorted([ ["Red", False, 'red' ], ["Green", False, 'green' ], ["Blue", False, 'blue' ], ["Yellow", False, 'yellow' ]], key=lambda k: random.random()); q1var[0][1] = True
+		cv_pil = Image.new('RGB', (60, 30), color = q3var[0][2])
+		im_path = self.addImage(cv_pil)
+		quest3 = {  "statement": '''What color is the image below??
+\\begin{{center}} \\includegraphics[width=0.1\\textwidth]{{{im}}} \\end{{center}}
+'''.format(im=im_path), "alternatives": sorted(q3var, key=lambda k: random.random()), "itensPerRow":4 }
+
+		# Question 4, normal picking ...
+		questRandom = [
+			{  "statement": "In a darkroom and you have one match left, which do you light first, the newspaper, the candle or the lamp?", "alternatives": sorted([
+				["The Match",     True],
+				["The Candle",    False],
+				["The Lamp",      False],
+				["The newspaper", False],
 			], key=lambda k: random.random()), "itensPerRow":2 },
-			{  "statement": "Enunciado Facil 2.", "alternatives": sorted([
-				["Correta", True],
-				["Errada", False],
-				["Errada", False],
-				["Errada", False],
+			{  "statement": "Look at this series: $2, 1, (1/2), (1/4), ...$ What number should come next?", "alternatives": sorted([
+				["$(1/3)$",  False],
+				["$(1/8)$",  True],
+				["$(2/8)$",  False],
+				["$(1/16)$", False]
+			], key=lambda k: random.random()), "itensPerRow":4 },
+			{  "statement": "Odometer is to mileage as compass is to ...", "alternatives": sorted([
+				["Direction", True],
+				["Speed",     False],
+				["Hiking",    False],
+				["Needle",    False],
 			], key=lambda k: random.random()), "itensPerRow":2 },
-			{  "statement": "Enunciado Facil 3.", "alternatives": sorted([
-				["Correta", True],
-				["Errada", False],
-				["Errada", False],
-				["Errada", False],
-			], key=lambda k: random.random()), "itensPerRow":2 },
-		]; random.shuffle(questFacil)
-		questDificil = [
-			{  "statement": "Enunciado Dificil 1.", "alternatives": sorted([
-				["Correta", True],
-				["Errada", False],
-				["Errada", False],
-				["Errada", False],
-			], key=lambda k: random.random()) },
-			{  "statement": "Enunciado Dificil 2.", "alternatives": sorted([
-				["Correta", True],
-				["Errada", False],
-				["Errada", False],
-				["Errada", False],
-			], key=lambda k: random.random()) },
-			{  "statement": "Enunciado Dificil 3.", "alternatives": sorted([
-				["Correta", True],
-				["Errada", False],
-				["Errada", False],
-				["Errada", False],
-			], key=lambda k: random.random()) },
-		]; random.shuffle(questDificil)
-		self.questionDescription  = "Escolha a alternativa correta das questões abaixo:"
-		self.questions  = questFacil[0:2] + questFacil[0:2]
-		self.scoreTable = [(20,"A+"), (19,"A"), (18,"A-"), (17,"B+"), (16,"B"), (15,"B-"), (14,"C"), (13,"C-"), (12,"D+"), (11,"D"), (0, "F")]
-		self.labels     = {"score": "Conceito", "if": "se", "else": "senão", "number_of_right_questions": "Qtd. de questões certas"}
-		self.conditionByLineLabel = 3
+		]; random.shuffle(questRandom)
+
+		self.questionDescription  = "Check the correct alternative:"
+		self.questions  = [quest1, quest2, quest3] + questRandom[0:2]
+		self.scoreTable = [(5, "A"), (4, "B"), (3, "C"), (2, "D"), (0, "F")]
+		self.labels     = {"score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct questions"}
+		self.conditionByLineLabel = 5
 """
 , 'truefalse': r"""
 from MakeTests import QuestionTrueOrFalse
-class QualquerNome(QuestionTrueOrFalse):
+class TrueFalseQuestion(QuestionTrueOrFalse):
 	def makeSetup(self):
 		import random
 		grp1 = [
-			["Esta mensagem 1 do grupo 2 é Verdadeira", True],
-			["Esta mensagem 2 do grupo 2 é Falsa", False],
-			["Esta mensagem 3 do grupo 2 é Verdadeira", True],
-			["Esta mensagem 4 do grupo 2 é Falsa", False],
-			["Esta mensagem 5 do grupo 2 é Verdadeira", True],
-			["Esta mensagem 6 do grupo 2 é Falsa", False]
+			["True  AND True",  True],
+			["True  AND False", False],
+			["False AND True ", False],
+			["False AND False", False]
 		]; random.shuffle(grp1)
 		grp2 = [
-			["Esta mensagem 1 do grupo 2 é Verdadeira", True],
-			["Esta mensagem 2 do grupo 2 é Falsa", False],
-			["Esta mensagem 3 do grupo 2 é Verdadeira", True],
-			["Esta mensagem 4 do grupo 2 é Falsa", False],
-			["Esta mensagem 5 do grupo 2 é Verdadeira", True],
-			["Esta mensagem 6 do grupo 2 é Falsa", False]
+			["True  OR True",  True],
+			["True  OR False", True],
+			["False OR True ", True],
+			["False OR False", False]
 		]; random.shuffle(grp2)
 		grp3 = [
-			["Esta mensagem 1 do grupo 3 é Verdadeira", True],
-			["Esta mensagem 2 do grupo 3 é Falsa", False],
-			["Esta mensagem 3 do grupo 3 é Verdadeira", True],
-			["Esta mensagem 4 do grupo 3 é Falsa", False],
-			["Esta mensagem 5 do grupo 3 é Verdadeira", True],
-			["Esta mensagem 6 do grupo 3 é Falsa", False]
+			["True  XOR True",  False],
+			["True  XOR False", True],
+			["False XOR True ", True],
+			["False XOR False", False]
 		]; random.shuffle(grp3)
 
 		all = grp1[:3] + grp2[:3] + grp3[:3]
 		random.shuffle(all)
 
 		self.questions            = all
-		self.questionDescription  = "Referente aos Capítulos 3, 4 e 5, preencha a tabela abaixo com V ou F de acordo com as perguntas a seguir."
-		self.scoreTable           = [(20,"A+"), (19,"A"), (18,"A-"), (17,"B+"), (16,"B"), (15,"B-"), (14,"C"), (13,"C-"), (12,"D+"), (11,"D"), (0, "F")]
+		self.questionDescription  = "About Boolean logic, answer the result of the questions below."
+		self.scoreTable           = [(9,"A+"), (8,"A"), (7,"B"), (6,"C"), (5,"D"), (0, "F")]
 		self.wrongFactor          = 3
-		self.labels               = {"true": "V", "false": "F", "score": "Conceito", "if": "se", "else": "senão", "number_of_right_questions": "Questões certas", "number_of_wrong_questions": "Questões erradas"}
+		self.labels               = {"true": "T", "false": "F", "score": "Score", "if": "se", "else": "else", "number_of_right_questions": "Correct questions", "number_of_wrong_questions": "Wrong questions"}
 		self.conditionByLineLabel = 3
 """
 , 'questionanswer': r"""
 from MakeTests import QuestionQA
-class QualquerNome(QuestionQA):
+class QAQuestion(QuestionQA):
 	def makeSetup(self):
 		self.full_list_question_answer_text = [
-			[''' Pergunta 01 ''', '''Resposta 01 '''],
-			[''' Pergunta 02 ''', '''Resposta 02 '''],
-			[''' Pergunta 03 ''', '''Resposta 03 '''],
-			[''' Pergunta 04 ''', '''Resposta 04 '''],
-			[''' Pergunta 05 ''', '''Resposta 05 '''],
-			[''' Pergunta 06 ''', '''Resposta 06 '''],
-			[''' Pergunta 07 ''', '''Resposta 07 '''],
-			[''' Pergunta 08 ''', '''Resposta 08 '''],
-			[''' Pergunta 09 ''', '''Resposta 09 '''],
-			[''' Pergunta 10 ''', '''Resposta 10 '''],
-			[''' Pergunta 11 ''', '''Resposta 11 '''],
-			[''' Pergunta 12 ''', '''Resposta 12 '''],
+			[''' Triangle ''', '''Three sides '''],
+			[''' Quadrilateral ''', '''Four sides '''],
+			[''' Pentagon ''', '''Five sides '''],
+			[''' Hexagon ''', '''Six sides '''],
+			[''' Heptagon ''', '''Seven sides '''],
+			[''' Octagon ''', '''Eight sides '''],
+			[''' Enneagon ''', '''Nine sides '''],
+			[''' Decagon ''', '''Ten sides '''],
+			[''' Hendecagon ''', '''Eleven sides '''],
+			[''' Dodecagon ''', '''Twelve sides '''],
+			[''' Tridecagon ''', '''Thirteen sides '''],
+			[''' Tetradecagon ''', '''Fourteen sides '''],
+			[''' Pentadecagon ''', '''Fifteen sides '''],
+			[''' Hexadecagon ''', '''Sixteen sides '''],
+			[''' Heptadecagon ''', '''Seventeen sides '''],
+			[''' Octadecagon ''', '''Eighteen sides '''],
+			[''' Enneadecagon ''', '''Nineteen sides '''],
+			[''' Icosagon ''', '''Twenty sides '''],
 		]
 		self.list_question_answer_index = QuestionQA.auxShuffle(self.full_list_question_answer_text, 8)
 		self.question_description = "Referente ao Capítulo 1, associe as Perguntas com as Respostas."
 		self.scoreTable = [(8,"A"), (7,"B"), (6,"B-"), (5,"C"), (4,"D"), (0,"F")]
-		self.labels     = {"questions": "Perguntas", "answers": "Respostas", "score": "Conceito", "if": "se", "else": "senão", "number_of_right_questions": "Qtd. de questões certas"}
+		self.labels     = {"questions": "Questions", "answers": "Answers", "score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct relationship"}
 		self.conditionByLineLabel = 3
 """
 , 'number': r"""
 from MakeTests import QuestionNumber
-class QualquerNome(QuestionNumber):
+class PowerQuestion(QuestionNumber):
+	q_num = None
+	q_pow = None
 	def makeSetup(self):
-		self.max_digits = 6
-		self.decimal_separator = ","
-		self.hlabel = "- - - Digitos (selecionar apenas um por linha) - - -"
-		self.vlabel = "> Seq. digitos >"
-		self.expected_value = 123.4
+		self.decimal_separator = None
+		self.hlabel = "- - - Digit (select one per line) - - -"
+		self.vlabel = "> Seq. of digits >"
+		import random
+		self.q_num = random.randrange(3,10)
+		self.q_pow = random.choice([2,3])
+		self.expected_value = self.q_num ** self.q_pow
+		import math
+		self.max_digits = int(math.log10(self.expected_value)) + 1
 	def getQuestionTex(self):
-		return "Escreva {}".format(self.expected_value)
+		return "Calculate ${n}^{{{p}}}$.".format(n=self.q_num, p=self.q_pow)
 	def getAnswerText(self,LaTeX):
 		return str(self.expected_value)
 	def getScoreFromNumber(self, num):
 		if num is None:
 			return "F"
 		else:
-			return "A" if num == self.expected_value else "D"
+			return "A" if num == self.expected_value else "F"
 """
 , 'ocr': r"""
 from MakeTests import QuestionOCR
