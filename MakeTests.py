@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+
 ## TIPS
+#	MACPORT
+#		Install MacPorts https://www.macports.org
+#		Execute in Terminal:
+#			sudo port -v selfupdate
+#		
 #	ZBAR
 #		MAC OSX:
 #			xcode-select --install
@@ -9,8 +15,10 @@
 #			brew install zbar
 #		LINUX:
 #			sudo apt-get install libzbar-dev libzbar0
+#
 #	CYTHON
 #		pip install Cython --install-option="--no-cython-compile"
+#
 #	PYMINIFIER
 #		sudo python -m pip install pyminifier
 #
@@ -59,7 +67,8 @@ except ImportError as error:
 		sys.exit("Please, install conda (https://www.anaconda.com/download).")
 	else:
 		package_name = {"pip":         ["conda", "install", "-c", "anaconda",    "pip"],
-                        "cv2":         ["conda", "install", "-c", "menpo",       "opencv3"],
+#                        "cv2":         ["conda", "install", "-c", "menpo",       "opencv3"],
+                        "cv2":         ["pip",   "install",                      "opencv-python"],
                         "qrcode":      ["conda", "install", "-c", "conda-forge", "qrcode"],
                         "PyPDF2":      ["conda", "install", "-c", "conda-forge", "pypdf2"],
                         "tesseract":   ["conda", "install", "-c", "conda-forge", "tesseract"],
@@ -1718,7 +1727,7 @@ class Main:
 					continue # Invlalid data
 
 				if self.verbose > 2:
-					print("QRCode found: page {}, student ".format(qrcode_page, qrcode_student), end="")
+					print("QRCode found: page {}, student {}".format(qrcode_page, qrcode_student), end="")
 					for k,v in qrcode_student.items():
 						print("{}: {} ".format(k,v), end="")
 					print(".")
@@ -2097,6 +2106,8 @@ def main():
 		parser.add_argument("-v", "--verbose", default=1, action="count", help="Increase output verbosity (most verbose: -vv).")
 		parser.add_argument("-s", "--silent", action="store_true", help="Enable silent mode (disable almost all output).")
 		parser.add_argument("-d", "--debug", action="store_true", help="Enable debug mode (show many windows and information).")
+		parser.add_argument("-q", "--question_file", type=str, nargs=1, help="Run a specific question file for debug.")
+		parser.add_argument("-i", "--interactive", action="store_true", help="Use interative console for debug.")
 		parser.add_argument("-t", "--temporary_dir", type=str, nargs=1, help="Directory used by temporary dirs/files. If not used, a temporary directory will be created and deleted in sequence.")
 		parser.add_argument("config_file", default="config.json", type=str, nargs='?', help="Configure file input (JSON format).")
 		parser.add_argument("-w", "--webcam", choices=range(10), type=int, nargs=1, help="Use webcam with ID.")
@@ -2138,6 +2149,16 @@ Quit       q     Quit pdb abruptly
 				import os, sys
 				os.execl(sys.executable, sys.executable, '-OO', *sys.argv)
 				return
+
+		if args.question_file:
+			import code
+			console = code.InteractiveConsole(locals=locals())
+			if args.verbose and args.interactive:
+				print("Running '{}' in Interactive Console. Press Ctrl-D to exit.".format(args.question_file[0]))
+			console.runcode(open(args.question_file[0]).read())
+			if args.interactive:
+				console.interact(banner="")
+			return
 
 		m = Main(config_file=args.config_file,config_default=examples['config'],verbose=args.verbose,temp_dir= None if args.temporary_dir is None else args.temporary_dir[0])
 
