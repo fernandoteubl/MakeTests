@@ -1689,16 +1689,10 @@ class Main:
 		full_path = os.path.join(os.path.dirname(os.path.realpath('__file__')), self.config['correction']['path'])
 		if not os.path.exists(full_path): os.makedirs(full_path)
 
-		# Generate an unique name to student directory
-			# Old version that uses all identifications to generate directory name
-			# student_str = ""
-			# c = 0
-			# for k2,v2 in self.config['correction']['headers']['identification'].items():
-			# 	student_str += student[k2]
-			# 	if c < len(self.config['correction']['headers']['identification']) - 1:
-			# 		student_str += "_"
-			# 	c += 1
-		student_str = student[self.config['correction']['headers']['student_directory_id']]
+		# Make an unique directory name for each student using student_directory_id info.
+		student_str = self.config['correction']['headers']['student_directory_id']
+		for k,v in self.config['correction']['headers']['identification'].items():
+			student_str = student_str.replace(k,str(student[k]))
 		
 		# Make path to student directory
 		full_path_student = full_path + "/" + student_str
