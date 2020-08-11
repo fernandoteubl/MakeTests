@@ -31,7 +31,7 @@ In question section, define path to data base.
 ```
 "db_path": "Questions"
 ```
-Select questions
+Select questions and weights:
 ```
 "select": [
   {"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
@@ -40,16 +40,20 @@ Select questions
   {"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
 ]
 ```
+In tex/includes section, include:
+```
+  "includes": [
+    "img"
+  ],
+```
+Put some logo called logo.jpeg at img folder.
 
-
-
-
-Create a CSV student's list file called students.csv. Example:
+Create a CSV student's list file called `Students.csv`. Example:
 
 ```
-ID; Name; EMail
-000001; "Alice"; alice@maketests.com
-000002; "Bob"; bob@maketests.com
+%ID%;%NAME%;%EMAIL%
+000001;"Alice";alice@maketests.com
+000002;"Bob";bob@maketests.com
 ```
 
 
