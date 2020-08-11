@@ -47,7 +47,17 @@ Select questions
 Create a CSV student's list file called students.csv. Example:
 
 ```
-ID,Name,EMail
+ID; Name; EMail
 000001; "Alice"; alice@maketests.com
 000002; "Bob"; bob@maketests.com
 ```
+
+
+# Errors and solutions
+
+**Error:** LaTeX error, no idea.
+
+**Solution:**
+1. Create a folder called tex;
+1. Include -t tex as parameter;
+1. Run `pdftex` manually and see the tex source.
