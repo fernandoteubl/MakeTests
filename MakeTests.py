@@ -1980,7 +1980,7 @@ class Main:
 			question = questions[question_num]
 
 			# Get score for the current question
-			score, ansAreaPosProc, ansFeedback = question.doCorrection(ansArea)
+			score, ansAreaPosProc, ansFeedback = question.doCorrection(ansArea.copy())
 			if score is None:
 				continue # Impossible to correct the current answer area, go to next answer area
 
@@ -2053,7 +2053,7 @@ class Main:
 						p.unlink()
 
 					# Save image and feedback
-					cv2.imwrite(full_path_student+"/"+k+"_"+str(v)+".jpg", ansAreaPosProc)
+					cv2.imwrite(full_path_student+"/"+k+"_"+str(v)+".jpg", ansArea)
 					if ansFeedback is not None:
 						cv2.imwrite(full_path_student+"/"+k+"_Feedback.jpg", ansFeedback)
 				
