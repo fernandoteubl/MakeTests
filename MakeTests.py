@@ -2203,7 +2203,7 @@ examples = {'config': r'''
 	],
 	"questions": {
 		"salt": "",
-		"db_path": "../Questions",
+		"db_path": "Questions",
 		"select" : [
 //			{"path": "Group",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}}
 		]
