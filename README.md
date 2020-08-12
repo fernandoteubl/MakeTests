@@ -15,6 +15,25 @@
   * **db_path**: Path to question database.
   * **select**: A list of questions selected to include in current test from database.
     * **path**: Path to group of questions (subpath allowed) or a specific question.
+    * **weight**: The weight of this question. It will be used in "final_calc" (we'll see later in this config)
+    * **replaces**: A dict with variables to be replaced before to generate the test
+  * **input**: List of studentes used to generate the tests
+    * **filename**: Path to CSV file
+    * **delimiter**: Delimiter used in CSV file
+    * **quotechar**: Quotechar used in CSV file
+  * **output**: PDFs generated
+    * **tests**: Path to PDF with all tests
+    * **template**: Path to template's PDF
+  * **correction**: Information about correction of questions
+    * **path**: Folder with all corrections information
+    * **csv_file**: Path to CSV file with all students score
+    * **delimiter**: Delimiter used in csv_file
+    * **quotechar**: Quotechar used in csv_file
+  * **headers**: The header of csv_file
+    *
+    
+  
+  
 
 # First Test
 
