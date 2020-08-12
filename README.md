@@ -216,28 +216,7 @@ Create a config_mail.json file:
 Edit this file:
 
 ```json
-{
-	"input": "input.csv",
-	"delimiter":";",
-	"quotechar": "\"",
-	"multiple_recipients_separator": ",",
 
-	"sender": "login@server.com",
-	"SMTP_server": "smtp.server.com",
-	"SMTP_port": "587",
-	"SMTP_login": "login@server.com",
-//	"SMTP_password": "your plain password :("
-
-	"subject": "Some subject",
-	"message": """First Line
-Second Line
-Third Line""",
-
-	"columns": {
-		"email": "EMAIL",
-		"attachment": "ATTACHMENT"
-	}
-}
 ```
 
 # Errors and solutions
