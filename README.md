@@ -30,8 +30,15 @@
     * **delimiter**: Delimiter used in csv_file
     * **quotechar**: Quotechar used in csv_file
   * **headers**: The header of csv_file
-    *
-    
+    * **identification**: List of headers that identificate the student. This varialbes needs to exist in input students CSV file.
+    * **counter**: Name of variable that has the number of question
+    * **intermediate**: Intermediate headers with score of each question
+    * **final**: Header with final score
+  * **student_directory_id**: Name of directories for each student with specific feedback.
+  * **final_calc**: A python function that take arguments list of score and weight of question and return the final score.
+* **tex**: All LaTeX code used to generate the test.
+  * **max_pages**: Mas number of pages for each test. It is necessary because each page has a unique QRCode, and the MakeTests needs to generate all images before of compile the LaTeX. A large number can slow the generating process.
+  * **qrcode_id_must_be_concatenated_with_dash_plus_the_page_number**: The unique QRCode ID of student. It must be concatenated with "-<page_number>". In LaTeX preamble, use `\newcommand{\includeqrcodeimage}[2]{\includegraphics[width=2.4cm]{#1-#2.png}}` command, and call it in document by `\includeqrcodeimage{%QRCODE_ID%}{\thepage}`.
   
   
 
