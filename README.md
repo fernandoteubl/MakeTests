@@ -154,9 +154,28 @@ curl -0 https://github.githubassets.com/images/modules/logos_page/Octocat.png -o
 Create a CSV student's list file called `Students.csv`. Example:
 
 ```
-%ID%;%NAME%;%EMAIL%
-000001;"Alice";alice@maketests.com
-000002;"Bob";bob@maketests.com
+echo "%ID%;%NAME%;%EMAIL%" > Students.csv
+for i in {1..30} ; do
+	nw=$[RANDOM%3+2]
+	name="\""
+	for (( i = 1; i <= $nw; i++ )); do
+		set="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		name+=${set:$RANDOM % ${#set}:1}
+		set="abcdefghijklmonpqrstuvwxyz"
+		n=$[RANDOM%12+4]
+		for j in `seq 1 $n`; do; char=${set:$RANDOM % ${#set}:1}; name+=$char; done
+		if [ $i -lt $nw ]; then; name+=" "; fi
+	done
+	name+="\""
+	mail=""
+	set="abcdefghijklmonpqrstuvwxyz"
+	n=$[RANDOM%12+4]
+	for j in `seq 1 $n`; do; char=${set:$RANDOM % ${#set}:1}; mail+=$char; done
+	mail+="@"
+	for j in `seq 1 $n`; do; char=${set:$RANDOM % ${#set}:1}; mail+=$char; done
+	mail+=".com"
+	echo "$[RANDOM%100000000+100000000]; $name; $mail" >> Students.csv
+done
 ```
 
 # Errors and solutions
