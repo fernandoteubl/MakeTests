@@ -1,5 +1,24 @@
 # Manual
 
+## Arguments
+```
+  -h, --help            show this help message and exit
+  -v, --verbose         Increase output verbosity (most verbose: -vv).
+  -s, --silent          Enable silent mode (disable almost all output).
+  -d, --debug           Enable debug mode (show many windows and information).
+  -q QUESTION_FILE, --question_file QUESTION_FILE
+                        Run a specific question file for debug.
+  -i, --interactive     Use interative console for debug.
+  -t TEMPORARY_DIR, --temporary_dir TEMPORARY_DIR
+                        Directory used by temporary dirs/files. If not used, a
+                        temporary directory will be created and deleted in
+                        sequence.
+  -w {0,1,2,3,4,5,6,7,8,9}, --webcam {0,1,2,3,4,5,6,7,8,9}
+                        Use webcam with ID.
+  -p PDF, --pdf PDF     PDF file with all scanned tests to correct it.
+  -e {choices,config,essay,number,ocr,questionanswer,truefalse}, --examples {choices,config,essay,number,ocr,questionanswer,truefalse}
+```
+
 ## JSON Config
 
 * **Comments**: Use "//" at first position of line.
