@@ -189,7 +189,56 @@ done
 ### Using WebCAM
 
 `MakeTesta.py -w 0`
+*NOTE: Try -w 1, -w 2, ... to select the correct WebCam*
 
+Point the camera at the questions!
+
+### Using PDF Scanned
+
+Scans all tests in a single PDF.
+
+```
+./Maketests.py -p <name_of_scanned_tests_file.pdf>
+```
+
+If you have more than one PDF, execute multiple times to append all scores and feedbacks.
+
+**All scores and feedback is in Correction folder.**
+
+## Send Feedback
+
+Create a config_mail.json file:
+
+```
+./SendMail.py -e > config_mail.json
+```
+
+Edit this file:
+
+```json
+{
+	"input": "input.csv",
+	"delimiter":";",
+	"quotechar": "\"",
+	"multiple_recipients_separator": ",",
+
+	"sender": "login@server.com",
+	"SMTP_server": "smtp.server.com",
+	"SMTP_port": "587",
+	"SMTP_login": "login@server.com",
+//	"SMTP_password": "your plain password :("
+
+	"subject": "Some subject",
+	"message": """First Line
+Second Line
+Third Line""",
+
+	"columns": {
+		"email": "EMAIL",
+		"attachment": "ATTACHMENT"
+	}
+}
+```
 
 # Errors and solutions
 
