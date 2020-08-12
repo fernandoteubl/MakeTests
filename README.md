@@ -1,17 +1,29 @@
-# MakeTests
+# Manual
 
-## First Test
+## JSON Config
 
-### Create a Question's DataBase
+* **Comments**: Use "//" at first position of line
+
+* **includeJSON**:  Include a second JSON file to append or replace the current.
+  * **overwite**: Just overwirte the key and value.
+  * **adding**: If is a list, use "<key_name>+" to append or "+<key_name> to insert at begin.
+
+# First Test
+
+## Create a Question's DataBase
+
+Make directoreis and subdirectories
 
 ```
-# Make directoreis and subdirectories
 mkdir Questions
 mkdir Questions/Easy
 mkdir Questions/Medium
 mkdir Questions/Hard
+```
 
-# Create some questions from template
+Create some questions from template
+
+```
 ./MakeTests.py -e choices > Questions/Easy/choices.py
 ./MakeTests.py -e truefalse > Questions/Easy/truefalse.py
 ./MakeTests.py -e questionanswer > Questions/Medium/questionanswer.py
@@ -21,17 +33,22 @@ mkdir Questions/Hard
 
 Edit/add/delete your questions.
 
-### Create a config file
+## Create a config file
+
+Create from template:
 
 ```
 ./MakeTests.py -e config > config.json
 ```
 
-In question section, define path to data base.
+In question section, define the path to data base:
+
 ```
 "db_path": "Questions"
 ```
-Select questions and weights:
+
+Select number, groups and weights of questions:
+
 ```
 "select": [
   {"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
@@ -40,13 +57,17 @@ Select questions and weights:
   {"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
 ]
 ```
-In tex/includes section, include:
+
+In tex/includes section, insert all additional paths:
+
 ```
   "includes": [
     "img"
   ],
 ```
-Put some logo called logo.jpeg at img folder.
+
+The template has a logo called logo.jpeg.
+Or remove it from template, or add a logo.jpeg in img path.
 
 Create a CSV student's list file called `Students.csv`. Example:
 
@@ -55,7 +76,6 @@ Create a CSV student's list file called `Students.csv`. Example:
 000001;"Alice";alice@maketests.com
 000002;"Bob";bob@maketests.com
 ```
-
 
 # Errors and solutions
 
