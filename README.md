@@ -151,8 +151,9 @@ mkdir img
 curl -0 https://github.githubassets.com/images/modules/logos_page/Octocat.png -o img/logo.png
 ```
 
-Create a CSV student's list file called `Students.csv`. Example:
+Create a CSV student's list file called `Students.csv`.
 
+Genarate a random Students.csv file:
 ```
 echo "%ID%;%NAME%;%EMAIL%" > Students.csv
 for i in {1..30} ; do
