@@ -2264,6 +2264,7 @@ examples = {'config': r'''
 		},
 		"includes": [
 //			"image directory path"
+			"img"
 		],
 		"preamble": [
 			"\\documentclass[twoside,a4paper,11pt]{article}",
