@@ -58,7 +58,11 @@
     * **answer**: The LaTeX code with the answer of each question from a specific student
     * **after**: The LaTeX code used after of student's answer
     * **footer**: The LaTeX code used as footer in template.
-  
+
+## List of Students
+
+Student's list is a CSV file with delimiter and chotechar defined in JSON config. There is no hard header name, but all headers used needs to be configured in JSON config.
+
 
 # First Test
 
@@ -137,3 +141,7 @@ Create a CSV student's list file called `Students.csv`. Example:
 1. Create a folder called tex;
 1. Include -t tex as parameter;
 1. Run `pdftex` manually and see the tex source.
+
+**Error:** There is a %SOMETHING% in LaTeX.
+
+**Solution:** Check the Students.csv header. Some variable is wrong and wasn't replaced.
