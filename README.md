@@ -1,5 +1,19 @@
 # Manual
 
+## Install
+
+* MACPORT
+  * Install [MacPorts](https://www.macports.org)
+    * Execute in Terminal:
+    * `sudo port -v selfupdate`
+* ZBAR
+  * MAC OSX:
+    * `xcode-select --install`
+    * `ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"`
+    * `brew install zbar`
+  * LINUX:
+    * `sudo apt-get install libzbar-dev libzbar0`
+
 ## Arguments
 ```
   -h, --help            show this help message and exit
