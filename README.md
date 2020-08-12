@@ -10,6 +10,12 @@
   * **overwite**: Just overwirte the key and value.
   * **adding**: If is a list, use "<key_name>+" to append or "+<key_name> to insert at begin.
 
+* **questions**: A list with questions parameters.
+  * **salt**: Used to use the same dataase and students, but other test. E.g.: Regular test and Sub test.
+  * **db_path**: Path to question database.
+  * **select**: A list of questions selected to include in current test from database.
+    * **path**: Path to group of questions (subpath allowed) or a specific question.
+
 # First Test
 
 ## Create a Question's DataBase
