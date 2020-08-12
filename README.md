@@ -39,7 +39,25 @@
 * **tex**: All LaTeX code used to generate the test.
   * **max_pages**: Mas number of pages for each test. It is necessary because each page has a unique QRCode, and the MakeTests needs to generate all images before of compile the LaTeX. A large number can slow the generating process.
   * **qrcode_id_must_be_concatenated_with_dash_plus_the_page_number**: The unique QRCode ID of student. It must be concatenated with "-<page_number>". In LaTeX preamble, use `\newcommand{\includeqrcodeimage}[2]{\includegraphics[width=2.4cm]{#1-#2.png}}` command, and call it in document by `\includeqrcodeimage{%QRCODE_ID%}{\thepage}`.
-  
+  * **question_image_answer_area**: All answer areas of each question is a image. This variable has the name this image.
+  * **question_counter**: Variable with the number of current question (1, 2, 3, ..)
+  * **question_total**: Variable with total number of questions.
+  * **answer_text**: Used just in template's PDF, has the correct answer in text format.
+  * **replaces**: A dict of variables to be replaced from document. This facilities the reuse of LaTeX template because you don't need to modify the values inside the latex code.
+  * **includes**: All directories to include in LaTeX generation. You can add a path with all images, for example.
+  * **preamble**: Preamble used in LaTeX.
+  * **termination**: Final code in LaTeX.
+  * **test**: Informations about individual test.
+    * **header**: The LaTeX code used as header for each student.
+    * **before**: The LaTeX code used before of each question.
+    * **after**: The LaTeX code used after of each question.
+    * **footer**: The LaTeX code used as footer for each student.
+  * **template**: Informations about template.
+    * **header**: The LaTeX code used in header in template.
+    * **before**: The LaTeX code used before of student's answer
+    * **answer**: The LaTeX code with the answer of each question from a specific student
+    * **after**: The LaTeX code used after of student's answer
+    * **footer**: The LaTeX code used as footer in template.
   
 
 # First Test
