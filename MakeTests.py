@@ -2197,7 +2197,7 @@ Quit       q     Quit pdb abruptly
 
 
 examples = {'config': r'''
-//		It is a comment (use '//' at frist postion of line)
+//		It is a comment (use '//' at first postion of line)
 //		OBS1: "key": ["Overwrite list"],
 //		OBS2: "key+": ["Append"],
 //		OBS3: "+key": ["Insert at begin"],
