@@ -2,7 +2,9 @@
 
 ## JSON Config
 
-* **Comments**: Use "//" at first position of line
+* **Comments**: Use "//" at first position of line.
+
+* **Multiple lines**: "key": """First Line<breakline>Second Line""" is equal "key": ["First Line", "Second Line"]
 
 * **includeJSON**:  Include a second JSON file to append or replace the current.
   * **overwite**: Just overwirte the key and value.
