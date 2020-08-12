@@ -130,6 +130,8 @@ Create from template:
 ./MakeTests.py -e config > config.json
 ```
 
+Edit config.json...
+
 In question section, define the path to data base:
 
 ```
