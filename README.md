@@ -158,7 +158,7 @@ Genarate a random Students.csv file:
 echo "%ID%;%NAME%;%EMAIL%" > Students.csv
 for i in {1..30} ; do
 	nw=$[RANDOM%3+2]
-	name="\""
+	name=""
 	for (( i = 1; i <= $nw; i++ )); do
 		set="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 		name+=${set:$RANDOM % ${#set}:1}
@@ -167,7 +167,6 @@ for i in {1..30} ; do
 		for j in `seq 1 $n`; do; char=${set:$RANDOM % ${#set}:1}; name+=$char; done
 		if [ $i -lt $nw ]; then; name+=" "; fi
 	done
-	name+="\""
 	mail=""
 	set="abcdefghijklmonpqrstuvwxyz"
 	n=$[RANDOM%12+4]
@@ -175,9 +174,22 @@ for i in {1..30} ; do
 	mail+="@"
 	for j in `seq 1 $n`; do; char=${set:$RANDOM % ${#set}:1}; mail+=$char; done
 	mail+=".com"
-	echo "$[RANDOM%100000000+100000000]; $name; $mail" >> Students.csv
+	echo "$[RANDOM%100000000+100000000];\"$name\";$mail" >> Students.csv
 done
 ```
+
+## Generate PDFs
+
+`MakeTests.py`
+
+## Print and Apply
+
+## Correcting
+
+### Using WebCAM
+
+`MakeTesta.py -w 0`
+
 
 # Errors and solutions
 
