@@ -132,33 +132,24 @@ Create from template:
 
 Edit config.json...
 
-In question section, define the path to data base:
-
-```
-"db_path": "Questions"
-```
-
 Select number, groups and weights of questions:
 
 ```
 "select": [
-  {"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
-  {"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-  {"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-  {"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
+		  {"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
+		  {"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+		  {"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+		  {"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
 ]
 ```
 
-In tex/includes section, insert all additional paths:
-
-```
-  "includes": [
-    "img"
-  ],
-```
-
 The template has a logo called logo.jpeg.
-Or remove it from template, or add a logo.jpeg in img path.
+Or remove it from LaTeX template, or add a logo.jpeg in img path.
+
+```
+mkdir img
+curl -0 https://github.githubassets.com/images/modules/logos_page/Octocat.png -o img/logo.png
+```
 
 Create a CSV student's list file called `Students.csv`. Example:
 
