@@ -1709,7 +1709,7 @@ class Main:
 		if not os.path.exists(full_path): os.makedirs(full_path)
 
 		# Make an unique directory name for each student using student_directory_id info.
-		student_str = self.config['correction']['headers']['student_directory_id']
+		student_str = self.config['correction']['student_directory_id']
 		for k,v in self.config['correction']['headers']['identification'].items():
 			student_str = student_str.replace(k,str(student[k]))
 		
@@ -2229,12 +2229,12 @@ examples = {'config': r'''
 		"delimiter": ";",
 		"quotechar": "\"",
 		"headers": {
-			"student_directory_id": "%NAME%",
 			"identification": {"%ID%": "ID", "%NAME%": "Name",  "%EMAIL%": "EMail"},
 			"counter": "%COUNT%",
 			"intermediate": "Question %COUNT%",
 			"final": "Final Score"
 		},
+		"student_directory_id": "%NAME%",
 		"final_calc": [
 			"def final_calc(questions, weight):",
 			"  tab = {'F-':0, 'F':26, 'F+':37, 'D-':46, 'D':53, 'D+':59, 'C-':65, 'C':70, 'C+':75, 'B-':80, 'B':84, 'B+':88, 'A-':92, 'A':96, 'A+':100}",
