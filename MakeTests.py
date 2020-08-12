@@ -1483,7 +1483,7 @@ class CorrectionManager:
 	weight           = None # List with weight of each question
 	final_calc_str   = None # Algorithmn used to calculate the final score
 
-	def __init__(self, students, weight, path, csv_file, delimiter=" ", quotechar="\"", final_calc=None, headers=None):
+	def __init__(self, students, weight, path, csv_file, delimiter=" ", quotechar="\"", student_directory_id=None, final_calc=None, headers=None):
 		import os, collections, copy
 		self.full_path = os.path.join(os.path.dirname(os.path.realpath('__file__')), path)
 		if not os.path.exists(self.full_path):
@@ -2251,7 +2251,7 @@ examples = {'config': r'''
 			"%PROFESSOR%":  "Professor Name",
 			"%CLASS%":      "Class Name",
 			"%DATE%":       "Date",
-			"%LOGO_IMG%":   "img/logo.jpeg",
+			"%LOGO_IMG%":   "img/logo.png",
 			"%NAME_LABEL%": "Name",
 			"%ID_LABEL%":   "ID",
 			"%EMAIL_LABEL%": "Email",
