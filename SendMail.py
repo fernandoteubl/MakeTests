@@ -12,7 +12,7 @@ def main():
 
 		if args.example:
 			print(r'''{
-	"input": "input.csv",
+	"input": "Correction/_scores.csv",
 	"delimiter":";",
 	"quotechar": "\"",
 	"multiple_recipients_separator": ",",
@@ -21,31 +21,44 @@ def main():
 	"SMTP_server": "smtp.server.com",
 	"SMTP_port": "587",
 	"SMTP_login": "login@server.com",
-//	"SMTP_password": "your plain password :("
+//	"SMTP_password": "Your plain password :( ... Leave this commented to ask while running, without storage it."
+	"subject": "Your final score is Final Score",
+	"message": """Hi Name,
+	your score:
+		Q1: Question 1
+		Q2: Question 2
+		Q3: Question 3
+		Q4: Question 4
+		Final: Final Score
 
-	"subject": "Some subject",
-	"message": """First Line
-Second Line
-Third Line""",
+	Attached, your feedback.
+
+	If you have any questions, please contact me.
+""",
 
 	"columns": {
-		"email": "EMAIL",
-		"attachment": "ATTACHMENT"
-	}
+		"email": "EMail",
+		"attachment": "Name"
+	},
+	"filter": """def filter(data):
+	for header,cell in data.row.items():
+		if cell == '':
+			return False
+	return True
+"""
 }''')
 			return
 
 
 		import chardet
 		with open(args.config_file, 'rb') as file:
-			raw = file.read(32)
-			encode = chardet.detect(raw)['encoding']
+			row = file.read(32)
+			encode = chardet.detect(row)['encoding']
 			file.close()
 
 		with open(args.config_file, encoding=encode) as f:
 			import json, re, os, collections
 			config_path = os.path.dirname(os.path.realpath(args.config_file))
-			os.chdir(config_path) # All path will be relative to the config file...
 
 			# Parse Tiple Quotes in JSON and convert to array of strings...
 			json_str = ""
@@ -53,26 +66,26 @@ Third Line""",
 			for line in f.read().split("\n"):
 				q = line.find("\"\"\"")
 				if not triple_quotes:
-					raw_str =  'r' if q > 0 and line[q-1] == 'r' else ''
-					if raw_str != '':
+					row_str =  'r' if q > 0 and line[q-1] == 'r' else ''
+					if row_str != '':
 						line = line[:q-1]+line[q:]
 						q -= 1
 				if q >= 0:
 					if triple_quotes: # End of triple quotes
-						tq_str += ",\n"+raw_str+"\"" + line[:q] + "\""
+						tq_str += ",\n"+row_str+"\"" + line[:q] + "\""
 						json_str += tq_str.replace("	","\\t") + "]" + line[q+3:] + "\n"
 						triple_quotes = False
 					else: # Begin of triple quotes
 						q2 = line[q+3:].find("\"\"\"")
 						if q2 >= 0: # Begin and End triple quotes in same line
 							q2 += q+3
-							json_str += line[:q] + "["+raw_str+"\"" + line[q+3:q2] + "\"]" + line[q2+3:] + "\n"
+							json_str += line[:q] + "["+row_str+"\"" + line[q+3:q2] + "\"]" + line[q2+3:] + "\n"
 						else:
 							json_str += line[:q] + "["
-							tq_str = ""+raw_str+"\"" + line[q+3:] + "\""
+							tq_str = ""+row_str+"\"" + line[q+3:] + "\""
 							triple_quotes = True
 				else:
-					if triple_quotes: tq_str   += ",\n"+raw_str+"\"" + line + "\""
+					if triple_quotes: tq_str   += ",\n"+row_str+"\"" + line + "\""
 					else:             json_str += line + "\n"
 
 			# Remove comments
@@ -143,6 +156,16 @@ Third Line""",
 				rows.append(s)
 			f.close()
 
+		dir_input = os.path.dirname(os.path.realpath(config['input']))
+
+		code_str = ""
+		for f in config['filter']: code_str += f + "\n"
+		def filter(data):
+			exec(code_str)
+			return eval('filter(data)')
+		from collections import namedtuple
+		FilterStruct = namedtuple("FilterStruct", "row message subject attachs recipients")
+
 		import smtplib
 		from email.mime.application import MIMEApplication
 		from email.mime.multipart import MIMEMultipart
@@ -174,7 +197,7 @@ Third Line""",
 
 			attach = None
 			if config['columns']['attachment'] in r:
-				attach = r[config['columns']['attachment']]
+				attach = os.path.join(dir_input, r[config['columns']['attachment']])
 
 			for k,v in r.items():
 				message = message.replace(k, v)
@@ -205,6 +228,10 @@ Third Line""",
 				else:
 					attach_file(path_attach)
 
+			data = FilterStruct(row=r, message=message, subject=subject, attachs=attachs, recipients=recipients)
+			if filter(data) == False:
+				print("Skipping message to {}".format(recipients))
+				continue
 
 			print("======")
 			print("\tTo:        {}".format(recipients))
