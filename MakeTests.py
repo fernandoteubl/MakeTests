@@ -15,13 +15,7 @@
 #			brew install zbar
 #		LINUX:
 #			sudo apt-get install libzbar-dev libzbar0
-#
-#	CYTHON
-#		pip install Cython --install-option="--no-cython-compile"
-#
-#	PYMINIFIER
-#		sudo python -m pip install pyminifier
-#
+
 
 """
 class Question:
