@@ -669,6 +669,10 @@ class LaTeX:
 			raise Exception("LaTeX.addInclude is trying to include an invalid directory (\"{}\")".format(inc))
 		self.includes.append(inc)
 
+	@staticmethod
+	def addImageDummy(img, prefix="", sufix="", extension=".png", noIncrement=False, save=True):
+		pass
+
 	def addImage(self, img, prefix="", sufix="", extension=".png", noIncrement=False, save=True):
 		import os
 		# Make an unique path to image file
@@ -799,7 +803,7 @@ class LaTeX:
 #  ABSTRACT !!!  #
 class Question:
 	info = None
-	addImage = None
+	addImage = LaTeX.addImageDummy
 	def __init__(self, **info):
 		self.info = info
 	def makeVariables(self):
