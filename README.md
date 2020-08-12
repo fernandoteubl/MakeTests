@@ -216,7 +216,42 @@ Create a config_mail.json file:
 Edit this file:
 
 ```json
+{
+	"input": "Correction/_scores.csv",
+	"delimiter":";",
+	"quotechar": "\"",
+	"multiple_recipients_separator": ",",
 
+	"sender": "login@server.com",
+	"SMTP_server": "smtp.server.com",
+	"SMTP_port": "587",
+	"SMTP_login": "login@server.com",
+	"subject": "Your final score is Final Score",
+	"message": """Hi Name,
+	your score:
+		Q1: Question 1
+		Q2: Question 2
+		Q3: Question 3
+		Q4: Question 4
+		Final: Final Score
+
+	Attached, your feedback.
+
+	If you have any questions, please contact me.
+""",
+
+	"columns": {
+		"email": "EMail",
+		"attachment": "Name"
+	},
+	"filter": """def filter(data):
+#	Try: 'data.subject' 'data.message' 'data.attachs data.recipients'
+	for header,cell in data.row.items():
+		if cell == '':
+			return False
+	return True
+"""
+}
 ```
 
 # Errors and solutions
