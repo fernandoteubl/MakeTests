@@ -226,14 +226,15 @@ Edit this file:
 	"SMTP_server": "smtp.server.com",
 	"SMTP_port": "587",
 	"SMTP_login": "login@server.com",
-	"subject": "Your final score is Final Score",
-	"message": """Hi Name,
+//	"SMTP_password": "Your plain password :( ... Leave this commented to ask while running, without storage it."
+	"subject": "Your final score is Final_Score",
+	"message": """Hi Fullname,
 	your score:
-		Q1: Question 1
-		Q2: Question 2
-		Q3: Question 3
-		Q4: Question 4
-		Final: Final Score
+		Question 1: Question_1
+		Question 2: Question_2
+		Question 3: Question_3
+		Question 4: Question_4
+		Final Score: Final_Score
 
 	Attached, your feedback.
 
@@ -242,10 +243,9 @@ Edit this file:
 
 	"columns": {
 		"email": "EMail",
-		"attachment": "Name"
+		"attachment": "Fullname"
 	},
 	"filter": """def filter(data):
-#	Try: 'data.subject' 'data.message' 'data.attachs data.recipients'
 	for header,cell in data.row.items():
 		if cell == '':
 			return False

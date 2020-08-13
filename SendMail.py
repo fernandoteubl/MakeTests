@@ -12,7 +12,7 @@ def main():
 
 		if args.example:
 			print(r'''{
-	"input": "Correction/_scores.csv",
+	"input": "list_students.csv",
 	"delimiter":";",
 	"quotechar": "\"",
 	"multiple_recipients_separator": ",",
@@ -22,14 +22,14 @@ def main():
 	"SMTP_port": "587",
 	"SMTP_login": "login@server.com",
 //	"SMTP_password": "Your plain password :( ... Leave this commented to ask while running, without storage it."
-	"subject": "Your final score is Final Score",
-	"message": """Hi Name,
+	"subject": "Your final score is HEADER_FINAL_SCORE",
+	"message": """Hi HEADER_FULLNAME,
+
 	your score:
-		Q1: Question 1
-		Q2: Question 2
-		Q3: Question 3
-		Q4: Question 4
-		Final: Final Score
+		Question 1: HEADER_Q1
+		Question 2: HEADER_Q2
+		Question 3: HEADER_Q3
+		Final Score: HEADER_FINAL_SCORE
 
 	Attached, your feedback.
 
@@ -37,14 +37,15 @@ def main():
 """,
 
 	"columns": {
-		"email": "EMail",
-		"attachment": "Name"
+		"email": "HEADER_EMAIL",
+		"attachment": "HEADER_ATTACHMENT"
 	},
 	"filter": """def filter(data):
 	for header,cell in data.row.items():
 		if cell == '':
-			return False
-	return True
+			return False # Skip...
+	return True # Send mail
+# Others info: 'data.subject' 'data.message' 'data.attachs' 'data.recipients'
 """
 }''')
 			return

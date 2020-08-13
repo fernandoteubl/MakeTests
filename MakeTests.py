@@ -2227,10 +2227,10 @@ examples = {'config': r'''
 		"delimiter": ";",
 		"quotechar": "\"",
 		"headers": {
-			"identification": {"%ID%": "ID", "%NAME%": "Name",  "%EMAIL%": "EMail"},
+			"identification": {"%ID%": "ID", "%NAME%": "Fullname",  "%EMAIL%": "EMail"},
 			"counter": "%COUNT%",
-			"intermediate": "Question %COUNT%",
-			"final": "Final Score"
+			"intermediate": "Question_%COUNT%",
+			"final": "Final_Score"
 		},
 		"student_directory_id": "%NAME%",
 		"final_calc": [
