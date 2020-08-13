@@ -189,6 +189,7 @@ done
 ### Using WebCAM
 
 `MakeTesta.py -w 0`
+
 *NOTE: Try -w 1, -w 2, ... to select the correct WebCam*
 
 Point the camera at the questions!
@@ -210,10 +211,10 @@ If you have more than one PDF, execute multiple times to append all scores and f
 Create a config_mail.json file:
 
 ```
-./SendMail.py -e > config_mail.json
+./SendMail.py -e > mail.json
 ```
 
-Edit this file:
+Edit this file using this template:
 
 ```json
 {
@@ -253,6 +254,8 @@ Edit this file:
 """
 }
 ```
+
+Change the template above with you SMTP info.
 
 # Errors and solutions
 
