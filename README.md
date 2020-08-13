@@ -208,7 +208,7 @@ If you have more than one PDF, execute multiple times to append all scores and f
 
 ## Send Feedback
 
-Create a config_mail.json file:
+Create a mail.json file:
 
 ```
 ./SendMail.py -e > mail.json
@@ -256,6 +256,8 @@ Edit this file using this template:
 ```
 
 Change the template above with you SMTP info.
+
+**TIP:** Create another config file (e.g.: mail_no_score.json) and use it to send mail to specific students with no scores or low socres changing the filter code.
 
 # Errors and solutions
 
