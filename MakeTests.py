@@ -55,7 +55,7 @@ elif _platform == "win32":
 	sys.exit("Windows has not yet been tested.")
 
 try:
-	import conda, pip, cv2, qrcode, pyzbar, barcode, PyPDF2, pytesseract, screeninfo
+	import conda, pip, cv2, qrcode, pyzbar, barcode, PyPDF2, pytesseract
 except ImportError as error:
 	if error.name == "conda":
 		sys.exit("Please, install anaconda3 (https://www.anaconda.com/download) or miniconda3 (https://docs.conda.io/en/latest/miniconda.html).")
@@ -67,8 +67,7 @@ except ImportError as error:
                         "tesseract":   ["conda", "install", "-c", "conda-forge", "tesseract"],
                         "pyzbar":      ["pip",   "install",                      "pyzbar"],
                         "barcode":     ["pip",   "install",                      "python-barcode"],
-                        "pytesseract": ["pip",   "install",                      "pytesseract"],
-                        "screeninfo":  ["pip",   "install",                      "screeninfo"]}
+                        "pytesseract": ["pip",   "install",                      "pytesseract"]}
 		if cur_version < (3,7):
 			package_name["cv2"] = ["conda", "install", "-c", "menpo",       "opencv3"]
 		else:
