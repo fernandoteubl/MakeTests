@@ -130,17 +130,17 @@ Create from template:
 ./MakeTests.py -e config > config.json
 ```
 
-Edit `config.json`...
+Open `config.json` file...
 
-Select all groups and weights of questions used:
+Include questions by adding groups and weights to key "select". Example:
 
 ```
-"select": [
-		  {"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
-		  {"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-		  {"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-		  {"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
-]
+		"select" : [
+			{"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
+			{"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
+		]
 ```
 
 The template has a logo called `logo.jpeg`.
