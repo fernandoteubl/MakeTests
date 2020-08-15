@@ -130,7 +130,7 @@ Create from template:
 ./MakeTests.py -e config > config.json
 ```
 
-Edit `config.json` with necessary.
+Edit `config.json` if necessary.
 
 The template has a logo called `logo.jpeg`.
 You can remove it from LaTeX template or add a logo.jpeg in img path:
