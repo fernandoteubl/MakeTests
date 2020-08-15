@@ -130,18 +130,7 @@ Create from template:
 ./MakeTests.py -e config > config.json
 ```
 
-Open `config.json` file...
-
-Include questions by adding groups and weights to key "select". Example:
-
-```
-		"select" : [
-			{"path": "Easy",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}},
-			{"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-			{"path": "Medium",  "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-			{"path": "Hard",  "weight": 1, "replaces": {"%PREFIX%": "Weight 2"}}
-		]
-```
+Edit `config.json` with necessary.
 
 The template has a logo called `logo.jpeg`.
 You can remove it from LaTeX template or add a logo.jpeg in img path:

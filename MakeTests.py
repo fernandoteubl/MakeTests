@@ -2208,7 +2208,10 @@ examples = {'config': r'''
 		"salt": "",
 		"db_path": "Questions",
 		"select" : [
-//			{"path": "Group",  "weight": 1, "replaces": {"%PREFIX%": "Weight 1"}}
+			{"path": "Easy",   "weight": 3, "replaces": {"%PREFIX%": "Weight 3"}},
+			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Hard",   "weight": 3, "replaces": {"%PREFIX%": "Weight 3"}}
 		]
 	},
 	"input": {
