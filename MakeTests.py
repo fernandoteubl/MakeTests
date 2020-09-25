@@ -2264,8 +2264,8 @@ examples = {'config': r'''
 			"%PROFESSOR_ABBREVIATION_LABEL%": "Prof.",
 			"%SIGNING_ABBREVIATION_LABEL%": "Sign",
 			"%INITIALLING_ABBREVIATION_LABEL%": "Initials",
-			"%ANSWER_AREA_BEFORE%": "\\textbf{Answer of question %COUNT%:}",
-			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Attention:}} Completely fill in the corresponding circles and do not shave!",
+			"%ANSWER_AREA_BEFORE%": "\\textbf{Answer to question %COUNT%:}",
+			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Remark:}} Fill up the corresponding circle without smudging.",
 			"%ANSWER_KEY_LABEL%": "Answer Key"
 		},
 		"includes": [
@@ -2366,7 +2366,7 @@ examples = {'config': r'''
 			"before": [
 				"",
 				"\\needspace{1\\baselineskip}",
-				"\\textbf{Questão %COUNT% de %TOTAL% (%PREFIX%):}"
+				"\\textbf{Question %COUNT% of %TOTAL% (%PREFIX%):}"
 			],
 			"after": [
 				"",
