@@ -25,7 +25,7 @@ class Question:
 	def answerAreaAspectRate(self): -> float | Aspect rate of Answer Area desired (width/height).
 	def drawAnswerArea(self, img):  -> img   | Draw using cv2 an unfilled area answer in img.
 	def doCorrection(self, img):    -> str   | Correct img answer and return the score.
-	def getAnswerText(self,LaTeX):  -> str   | Return the answer in LaTeX or Plain Text, used to template.
+	def getAnswerText(self,LaTeX):  -> str   | Return the answer in LaTeX or Plain Text, used to answer key.
 
 class QuestionMatrix(Question):
 	rows                              -> [str]                    | List of row's label  (Set it at makeVariable())
@@ -33,7 +33,7 @@ class QuestionMatrix(Question):
 	hlabel                            -> str                      | Horizontal label. None to disable.  (Set it at makeVariable())
 	vlabel                            -> str                      | Vertical label. None to disable.  (Set it at makeVariable())
 	def getScore(self, matrix_answer) -> str                      | Return the score using matrix_answer.
-	def getTemplate(self)             -> matrix[boolean][boolean] | Return the correct boolean matrix.
+	def getAnswerKey(self)            -> matrix[boolean][boolean] | Return the correct boolean matrix.
 	IMPLEMENTED: answerAreaAspectRate; drawAnswerArea; doCorrection
 	TO IMPLEMENT: makeVariables; getQuestionText; getAnswerText
 """
@@ -836,7 +836,7 @@ class QuestionMatrix(Question):
 
 	def getScore(self, matrix_answer):
 		raise Exception("Method not implemented.")
-	def getTemplate(self):
+	def getAnswerKey(self):
 		raise Exception("Method not implemented.")
 
 	def answerAreaAspectRate(self):
@@ -889,7 +889,7 @@ class QuestionMatrix(Question):
 		img_gray = cv2.adaptiveThreshold(img_gray,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY_INV,2*((rad*4)//2)+1,C=2)
 
 		# Get the correct answers
-		template = self.getTemplate()
+		answerKey = self.getAnswerKey()
 
 		# Make matrix (ans) with True or False (cheked and unchecked)
 		offset  = 0.5 # neighborhood inclusion
@@ -918,7 +918,7 @@ class QuestionMatrix(Question):
 						circle_mask = np.zeros((ho, wo), np.uint8)
 						cv2.circle(circle_mask,(c[0],c[1]),c[2],255,-1)
 						avg = cv2.mean(roi_gray, mask=circle_mask)[::-1][-1]
-						ansRow.append({'checked': avg>200, 'center': (xo+c[0], yo+c[1]), 'radius': c[2], 'template': template[i][j]})
+						ansRow.append({'checked': avg>200, 'center': (xo+c[0], yo+c[1]), 'radius': c[2], 'answer_key': answerKey[i][j]})
 						successful = True
 						break
 				if not successful:
@@ -963,11 +963,11 @@ class QuestionMatrix(Question):
 		# Draw wrongs and corrects answers to show feedback
 		for ar in ans:
 			for a in ar:
-				if a['checked'] and a['template']:
+				if a['checked'] and a['answer_key']:
 					cv2.circle(img, a['center'], a['radius'], (0,255,0), -1)
-				elif a['checked'] and not a['template']:
+				elif a['checked'] and not a['answer_key']:
 					cv2.circle(img, a['center'], a['radius'], (0,0,255), -1)
-				elif not a['checked'] and a['template']:
+				elif not a['checked'] and a['answer_key']:
 					cv2.circle(img, a['center'], a['radius']//2, (0,255,0), -1)
 					cv2.circle(img, a['center'], a['radius'], (0,0,255), 3)
 				else:
@@ -1013,7 +1013,7 @@ class QuestionEssay(QuestionMatrix):
 		for i in range(len(self.cols)):
 			if matrix_answer[0][i]:
 				return self.cols[i]
-	def getTemplate(self):
+	def getAnswerKey(self):
 		return [[False for j in range(len(self.cols))] for i in range(len(self.rows))]
 # END QUESTION ESSAY #
 ######################
@@ -1062,7 +1062,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 				return s[1]
 		return self.scoreTable[-1][1]
 
-	def getTemplate(self):
+	def getAnswerKey(self):
 		rowT = [True  == q[1] for q in self.questions]
 		rowF = [False == q[1] for q in self.questions]
 		return [rowT, rowF]
@@ -1152,7 +1152,7 @@ class QuestionMultipleChoice(QuestionMatrix):
 				return s[1]
 		return self.scoreTable[-1][1]
 
-	def getTemplate(self):
+	def getAnswerKey(self):
 		matrix = [[None for j in range(len(self.questions))] for i in range(len(self.questions[0]['alternatives']))]
 		for i in range(len(self.questions)):
 			for j in range(len(self.questions[i]['alternatives'])):
@@ -1252,7 +1252,7 @@ class QuestionNumber(QuestionMatrix):
 		except ValueError: return self.getScoreFromNumber(None) # Invalid
 		return self.getScoreFromNumber(value)
 
-	def getTemplate(self):
+	def getAnswerKey(self):
 		matrix = [[False for j in range(len(self.cols))] for i in range(len(self.rows))]
 		str_val = str(self.expected_value)
 		for d in range(len(str_val)):
@@ -1343,20 +1343,20 @@ class QuestionQA(QuestionMatrix):
 		return ans
 
 	def getScore(self, matrix_answer):
-		template = self.getTemplate()
+		answerKey = self.getAnswerKey()
 		corrects =0; wrongs = 0
 		for i in range(len(matrix_answer)):
 			for j in range(len(matrix_answer[i])):
-				if template[i][j]:
+				if answerKey[i][j]:
 					valid = True
 					for s in range(len(matrix_answer)):
-						if matrix_answer[s][j] != template[s][j]:
+						if matrix_answer[s][j] != answerKey[s][j]:
 							valid = False
 							break
 					if valid == False:
 						break
 					for t in range(len(matrix_answer[i])):
-						if matrix_answer[i][t] != template[i][t]:
+						if matrix_answer[i][t] != answerKey[i][t]:
 							valid = False
 							break
 					if valid:
@@ -1368,7 +1368,7 @@ class QuestionQA(QuestionMatrix):
 				return s[1]
 		return self.scoreTable[-1][1]
 
-	def getTemplate(self):
+	def getAnswerKey(self):
 		matrix = [[False for j in range(len(self.cols))] for i in range(len(self.rows))]
 		q = [q for q, a in self.list_question_answer_index]
 		a = [a for q, a in self.list_question_answer_index]
@@ -1775,18 +1775,18 @@ class Main:
 			tex.addInclude(i)
 		tex.addTex(self.config['tex']['preamble'])
 
-		#Initiate output template
-		template = LaTeX(sufix_temp_dir="Template", temporary_directory=self.temp_dir)
-		template.addReplaces({self.config['tex']['question_total']: str(len(self.selected))})
-		template.addReplaces(self.config['tex']['replaces'])
+		#Initiate output answer key
+		answerKey = LaTeX(sufix_temp_dir="AnswerKey", temporary_directory=self.temp_dir)
+		answerKey.addReplaces({self.config['tex']['question_total']: str(len(self.selected))})
+		answerKey.addReplaces(self.config['tex']['replaces'])
 		for i in self.config['tex']['includes']:
-			template.addInclude(i)
-		template.addTex(self.config['tex']['preamble'])
-		template.addTex(self.config['tex']['template']['header'])
+			answerKey.addInclude(i)
+		answerKey.addTex(self.config['tex']['preamble'])
+		answerKey.addTex(self.config['tex']['answer_key']['header'])
 
 		if self.verbose > 2:
 			print("Temporary Directory (Tests):    {}".format(tex.temp_dir))
-			print("Temporary Directory (Template): {}".format(template.temp_dir))
+			print("Temporary Directory (Answer Key): {}".format(answerKey.temp_dir))
 
 		if self.verbose > 1: print("There is {} students:".format(len(self.students)))
 
@@ -1814,7 +1814,7 @@ class Main:
 
 			# Update student info in LaTeX macro
 			tex.addReplaces(student)
-			template.addReplaces(student)
+			answerKey.addReplaces(student)
 
 			# Make QRCode (one by page) and save it in latex temporary folder
 			for pg in range(1,self.config['tex']['max_pages']+1):
@@ -1826,7 +1826,7 @@ class Main:
 
 			# Begin new student
 			tex.addTex(self.config['tex']['test']['header'])
-			template.addTex(self.config['tex']['template']['before'])
+			answerKey.addTex(self.config['tex']['answer_key']['before'])
 			
 			# Insert questions in tex
 			for i in range(len(questions)):
@@ -1850,19 +1850,19 @@ class Main:
 				tex.addTex(questions[i].getQuestionTex())
 				tex.addTex(self.config['tex']['test']['after'])
 
-				# Insert correct answer in template
-				template.addReplaces({self.config['tex']['question_counter']: str(i+1)})
-				template.addReplaces({self.config['tex']['answer_text']: ans_text})
-				template.addTex(self.config['tex']['template']['answer'])
+				# Insert correct answer in answer key
+				answerKey.addReplaces({self.config['tex']['question_counter']: str(i+1)})
+				answerKey.addReplaces({self.config['tex']['answer_text']: ans_text})
+				answerKey.addTex(self.config['tex']['answer_key']['answer'])
 
 			# End new student
 			tex.addTex(self.config['tex']['test']['footer'])
-			template.addTex(self.config['tex']['template']['after'])
+			answerKey.addTex(self.config['tex']['answer_key']['after'])
 
-		# Finisth tex and template document
+		# Finisth tex and answer key document
 		tex.addTex(self.config['tex']['termination'])
-		template.addTex(self.config['tex']['template']['footer'])
-		template.addTex(self.config['tex']['termination'])
+		answerKey.addTex(self.config['tex']['answer_key']['footer'])
+		answerKey.addTex(self.config['tex']['termination'])
 
 		from subprocess import CalledProcessError
 		try:
@@ -1887,23 +1887,23 @@ class Main:
 			else:                raise Exception("Error to genereate {}". format(self.config['output']['tests']))
 
 
-		# Make template.pdf
+		# Make answer_key.pdf
 		try:
 			if self.verbose > 2:
-				template.printTex()
+				answerKey.printTex()
 			if self.verbose > 0:
-				print("Generating {}...".format(self.config['output']['template']))
-			for l in template.makePdf(self.config['output']['template']):
+				print("Generating {}...".format(self.config['output']['answer_key']))
+			for l in answerKey.makePdf(self.config['output']['answer_key']):
 				if self.verbose > 2:
 					print(l, end="")
 			if self.verbose > 0:
-				print("PDF '{}' generated.".format(self.config['output']['template']))
+				print("PDF '{}' generated.".format(self.config['output']['answer_key']))
 		except CalledProcessError as e:
-			if self.verbose > 1: raise Exception(template.getError())
-			else:                raise Exception("Error to generate {}". format(self.config['output']['template']))
+			if self.verbose > 1: raise Exception(ansserKey.getError())
+			else:                raise Exception("Error to generate {}". format(self.config['output']['answer_key']))
 		except UnicodeDecodeError as e:
 			if self.verbose > 1: raise Exception(e.args)
-			else:                raise Exception("Error to genereate {}". format(self.config['output']['template']))
+			else:                raise Exception("Error to genereate {}". format(self.config['output']['answer_key']))
 
 	def doCorrection(self, img):
 		# Resize for large image
@@ -2221,7 +2221,7 @@ examples = {'config': r'''
 	},
 	"output": {
 		"tests":    "Tests.pdf",
-		"template": "Template.pdf"	
+		"answer_key": "AnswerKeys.pdf"	
 	},
 	"correction": {
 		"path": "Correction",
@@ -2266,7 +2266,7 @@ examples = {'config': r'''
 			"%INITIALLING_ABBREVIATION_LABEL%": "Initials",
 			"%ANSWER_AREA_BEFORE%": "\\textbf{Answer of question %COUNT%:}",
 			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Attention:}} Completely fill in the corresponding circles and do not shave!",
-			"%TEMPLATE_LABEL%": "Template"
+			"%ANSWER_KEY_LABEL%": "Answer Key"
 		},
 		"includes": [
 //			"image directory path"
@@ -2380,13 +2380,13 @@ examples = {'config': r'''
 				"\\cleardoublepage{}"
 			]
 		},
-		"template":{
+		"answer_key":{
 			"header": [
 				"",
 				"\\begin{center}",
 				"\\begin{tabular}{|c c|}",
 				"\\hline",
-				"\\multicolumn{2}{|c|}{ {\\LARGE\\textbf{%TEMPLATE_LABEL%}} } \\\\",
+				"\\multicolumn{2}{|c|}{ {\\LARGE\\textbf{%ANSWER_KEY_LABEL%}} } \\\\",
 				"{\\large\\textbf{%COURSE%}} & {\\large\\textbf{%TEST_NAME%}} \\\\",
 				"{\\large\\textbf{%CLASS%}} & {\\large\\textbf{%DATE%}} \\\\",
 				"\\hline",
