@@ -1380,7 +1380,7 @@ class QuestionQA(QuestionMatrix):
 		q = [q for q, a in self.list_question_answer_index]
 		a = [a for q, a in self.list_question_answer_index]
 		for i in range(len(q)):
-			matrix[i][a.index(q[i])] = True
+			matrix[a.index(q[i])][i] = True
 		return matrix
 # END QUESTION QUESTION AND ANSWER #
 ####################################
