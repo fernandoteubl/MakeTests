@@ -961,17 +961,24 @@ class QuestionMatrix(Question):
 		score = self.getScore(matrix)
 
 		# Draw wrongs and corrects answers to show feedback
+		def point_offset(pt, x, y):
+			return (pt[0] + x, pt[1] + y)
 		for ar in ans:
 			for a in ar:
 				if a['checked'] and a['answer_key']:
 					cv2.circle(img, a['center'], a['radius'], (0,255,0), -1)
+					cv2.line(img, point_offset(a['center'],-1*a['radius'],0), point_offset(a['center'],-1*a['radius']//3,a['radius']), (255,0,0), thickness=3)
+					cv2.line(img, point_offset(a['center'],-1*a['radius']//3,a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (255,0,0), thickness=3)
 				elif a['checked'] and not a['answer_key']:
-					cv2.circle(img, a['center'], a['radius'], (0,0,255), -1)
+					cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
+					cv2.circle(img, a['center'], a['radius'], (0,0,255), 2)
+					cv2.line(img, point_offset(a['center'],a['radius'],a['radius']), point_offset(a['center'],-1*a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
+					cv2.line(img, point_offset(a['center'],-1*a['radius'],a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
 				elif not a['checked'] and a['answer_key']:
-					cv2.circle(img, a['center'], a['radius']//2, (0,255,0), -1)
-					cv2.circle(img, a['center'], a['radius'], (0,0,255), 3)
+					cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
+					ImageUtils.drawTextInsideTheBox(img[a['center'][1]-a['radius']//2:a['center'][1]+a['radius'],a['center'][0]-a['radius']:a['center'][0]+a['radius']], "?", (0,0,255))
 				else:
-					cv2.circle(img, a['center'], a['radius'], (0,255,0), 2)
+					cv2.circle(img, a['center'], a['radius'], (255,0,0), 2)
 
 		# Draw grid lines
 		for i in range(h_cells):
