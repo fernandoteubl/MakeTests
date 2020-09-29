@@ -451,7 +451,7 @@ class ImageUtils:
 		fs_w = w/tex_w; fs_h = h/(bl+tex_h)
 		argText['fontScale'] = fs_w if fs_w < fs_h else fs_h; argTextSize['fontScale'] = argText['fontScale']
 		(tex_w, tex_h), bl = cv2.getTextSize(t, **argTextSize)
-		cv2.putText(i, t, (w//2-tex_w//2,h//2+tex_h//2-bl//2), **argText)
+		cv2.putText(i, t, (w//2-tex_w//2,h//2+tex_h//2-bl//4), **argText)
 
 	@staticmethod
 	def drawMarker(img, pos, radius):
@@ -976,7 +976,7 @@ class QuestionMatrix(Question):
 					cv2.line(img, point_offset(a['center'],-1*a['radius'],a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
 				elif not a['checked'] and a['answer_key']:
 					cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
-					ImageUtils.drawTextInsideTheBox(img[a['center'][1]-a['radius']//2:a['center'][1]+a['radius'],a['center'][0]-a['radius']:a['center'][0]+a['radius']], "?", (0,0,255))
+					ImageUtils.drawTextInsideTheBox(img[a['center'][1]-a['radius']:a['center'][1]+a['radius'],a['center'][0]-a['radius']:a['center'][0]+a['radius']], "?", (0,0,255))
 				else:
 					cv2.circle(img, a['center'], a['radius'], (255,0,0), 2)
 
@@ -2022,12 +2022,13 @@ class Main:
 				topBar[:] = (200,200,255); botBar[:] = (200,200,255)
 
 				txtStudent = " ".join([v for k,v in student.items()])
-				b = th//10; ImageUtils.drawTextInsideTheBox(topBar[b:th-b,b:tw-b,:], txtStudent, color=(255,0,0), thickness=1)
-				scores = all_scores.copy()
-				for k,v in scores.items(): scores[k] = "?" if v is None else v
-				txtScores = ", ".join([str(v) for k,v in scores.items() if k in self.correction.fieldsname_quest])
-				txtScores = "{}: {} ({}: {})".format(question_num+1, score, txtScores, scores[self.correction.fieldnames_final[0]])
-				b = bh//10; ImageUtils.drawTextInsideTheBox(botBar[b:bh-b,b:bw-b,:], txtScores, color=(255,0,0))
+				b = th//10; ImageUtils.drawTextInsideTheBox(topBar[b:th-2*b,b:tw-2*b,:], txtStudent, color=(255,0,0), thickness=1)
+				intermediate_scores = [v for k,v in all_scores.items() if k in self.correction.fieldsname_quest]
+				intermediate_scores = ["Q{q_num}: {score}".format(q_num=i+1, score="?" if intermediate_scores[i] is None else intermediate_scores[i]) for i in range(len(intermediate_scores))]
+				final_score = all_scores[self.correction.fieldnames_final[0]]
+				if final_score is None: final_score = "?"
+				txtScores = "Q{quest_num} = {score}   |   {final} ({scores})".format(quest_name=self.correction.fieldsname_quest[question_num], quest_num=question_num+1, score=score, scores="; ".join(intermediate_scores), final=final_score, final_name=self.correction.fieldnames_final[0])
+				b = bh//10; ImageUtils.drawTextInsideTheBox(botBar[b:bh-2*b,b:bw-2*b,:], txtScores, color=(255,0,0))
 
 				ImageUtils.overlayWarpImage(img, topBar, topQuad, np.float32([[0,th],[tw,th],[tw,0],[0,0]]))
 				ImageUtils.overlayWarpImage(img, botBar, botQuad, np.float32([[0,bh],[bw,bh],[bw,0],[0,0]]))
@@ -2538,7 +2539,7 @@ class TrueFalseQuestion(QuestionTrueOrFalse):
 		self.questionDescription  = "About Boolean logic, answer the result of the questions below."
 		self.scoreTable           = [(9,"A+"), (8,"A"), (7,"B"), (6,"C"), (5,"D"), (0, "F")]
 		self.wrongFactor          = 3
-		self.labels               = {"true": "T", "false": "F", "score": "Score", "if": "se", "else": "else", "number_of_right_questions": "Correct questions", "number_of_wrong_questions": "Wrong questions"}
+		self.labels               = {"true": "T", "false": "F", "score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct questions", "number_of_wrong_questions": "Wrong questions"}
 		self.conditionByLineLabel = 3
 """
 , 'questionanswer': r"""
