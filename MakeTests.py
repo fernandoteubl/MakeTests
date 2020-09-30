@@ -2216,10 +2216,11 @@ examples = {'config': r'''
 		"salt": "",
 		"db_path": "Questions",
 		"select" : [
-			{"path": "Easy",   "weight": 3, "replaces": {"%PREFIX%": "Weight 3"}},
+			{"path": "Easy",   "weight": 3, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Easy",   "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-			{"path": "Hard",   "weight": 3, "replaces": {"%PREFIX%": "Weight 3"}}
+			{"path": "Hard",   "weight": 3, "replaces": {"%PREFIX%": "Weight 4"}}
 		]
 	},
 	"input": {
@@ -2480,8 +2481,19 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 \\begin{{center}} \\includegraphics[width=0.1\\textwidth]{{{im}}} \\end{{center}}
 '''.format(im=im_path), "alternatives": sorted(q3var, key=lambda k: random.random()), "itensPerRow":4 }
 
-		# Question 4, normal picking ...
-		questRandom = [
+		# Question 4 using RANDOM
+		import random
+		q_rand = { 'x': round(random.uniform(1, 49), 2), 'y': round(random.uniform(1, 49), 2), 'op': random.choice(['+', '-', '*', '/']) }
+		quest4 = {"statement": '''If x={x} and y={y}, what is x{op}y?'''.format(**q_rand),
+			"alternatives": sorted([
+			[round(eval("{x} {op} {y}".format(**q_rand)), 2), True],
+			[round(eval("(1.2*{x}) {op} {y}".format(**q_rand)), 2), False],
+			[round(eval("(1.2*{x}) {op} (1.6*{y})".format(**q_rand)), 2), False],
+			[round(eval("{x} {op} (1.6*{y})".format(**q_rand)), 2), False]
+		], key=lambda k: random.random()), "itensPerRow": 4}
+
+		# Question 5, normal picking ...
+		quest5 = [
 			{  "statement": "In a darkroom and you have one match left, which do you light first, the newspaper, the candle or the lamp?", "alternatives": sorted([
 				["The Match",     True],
 				["The Candle",    False],
@@ -2500,10 +2512,10 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 				["Hiking",    False],
 				["Needle",    False],
 			], key=lambda k: random.random()), "itensPerRow":2 },
-		]; random.shuffle(questRandom)
+		]; random.shuffle(quest5)
 
 		self.questionDescription  = "Check the correct alternative:"
-		self.questions  = [quest1, quest2, quest3] + questRandom[0:2]
+		self.questions  = [quest1, quest2, quest3, quest4] + quest5[0:2]
 		self.scoreTable = [(5, "A"), (4, "B"), (3, "C"), (2, "D"), (0, "F")]
 		self.labels     = {"score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct questions"}
 		self.conditionByLineLabel = 5
