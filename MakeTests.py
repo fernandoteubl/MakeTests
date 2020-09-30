@@ -2428,7 +2428,6 @@ class EssayQuestion(QuestionEssay):
 		return ""
 """
 , 'choices': r"""
-
 from MakeTests import QuestionMultipleChoice
 class MultipleChoiceQuestion(QuestionMultipleChoice):
 	def makeSetup(self):
@@ -2437,7 +2436,11 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 
 		# Question 1 using MATPLOTLIB
 		import matplotlib.pyplot as plt
-		q1var = sorted([ ["$\\sin()$", False, np.sin], ["$\\cos()$", False, np.cos], ["$\\tan()$", False, np.tan], ["$\\arctan()$", False, np.arctan] ], key=lambda k: random.random()); q1var[0][1] = True
+		q1var = sorted([ ["$\\sin()$", False, np.sin],
+		                 ["$\\cos()$", False, np.cos],
+						 ["$\\tan()$", False, np.tan],
+						 ["$\\arctan()$", False, np.arctan]
+						], key=lambda k: random.random()); q1var[0][1] = True
 		x = np.arange(0,2*np.pi,0.1); y = q1var[0][2](x)
 		plt.clf(); plt.plot(x,y); im_path = self.addImage(plt)
 		quest1 = {  "statement": '''Which function corresponds to the graph below?
@@ -2446,7 +2449,11 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 
 		# Question 2 using OpenCV
 		import cv2
-		q2var = sorted([ ["Square", False, [(10,10), (90,10), (90,90), (10,90)] ], ["Parallelogram", False, [(10,10), (75,10), (90,90), (25,90)] ], ["Trapezium", False, [(10,10), (90,10), (75,90), (25,90)] ], ["Rectangle", False, [(10,25), (90,25), (90,75), (10,75)] ] ], key=lambda k: random.random()); q1var[0][1] = True
+		q2var = sorted([ ["Square", False, [(10,10), (90,10), (90,90), (10,90)] ],
+		                 ["Parallelogram", False, [(10,10), (75,10), (90,90), (25,90)] ],
+						 ["Trapezium", False, [(10,10), (90,10), (75,90), (25,90)] ],
+						 ["Rectangle", False, [(10,25), (90,25), (90,75), (10,75)] ]
+						], key=lambda k: random.random()); q2var[0][1] = True
 		cv_img = np.zeros((100,100,3), np.uint8); cv_img[:,:] = (255,255,255)
 		for i in range(len(q2var[0][2])):
 			cv2.line(img=cv_img, pt1=q2var[0][2][i], pt2=q2var[0][2][(i+1) % len(q2var[0][2])], color=(0,0,0), thickness=1, lineType=8, shift=0)
@@ -2457,7 +2464,10 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 
 		# Question 3 using PILLOW
 		from PIL import Image
-		q3var = sorted([ ["Red", False, 'red' ], ["Green", False, 'green' ], ["Blue", False, 'blue' ], ["Yellow", False, 'yellow' ]], key=lambda k: random.random()); q1var[0][1] = True
+		q3var = sorted([ ["Red", False, 'red' ],
+		                 ["Green", False, 'green' ],
+						 ["Blue", False, 'blue' ], ["Yellow", False, 'yellow' ]
+						], key=lambda k: random.random()); q3var[0][1] = True
 		cv_pil = Image.new('RGB', (60, 30), color = q3var[0][2])
 		im_path = self.addImage(cv_pil)
 		quest3 = {  "statement": '''What color is the image below??
@@ -2466,13 +2476,13 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 
 		# Question 4 using RANDOM
 		import random
-		q_rand = { 'x': round(random.uniform(1, 49), 2), 'y': round(random.uniform(1, 49), 2), 'op': random.choice(['+', '-', '*', '/']) }
-		quest4 = {"statement": '''If x={x} and y={y}, what is x{op}y?'''.format(**q_rand),
+		q4var = { 'x': round(random.uniform(1, 49), 2), 'y': round(random.uniform(1, 49), 2), 'op': random.choice(['+', '-', '*', '/']) }
+		quest4 = {"statement": '''If x={x} and y={y}, what is x{op}y?'''.format(**q4var),
 			"alternatives": sorted([
-			[round(eval("{x} {op} {y}".format(**q_rand)), 2), True],
-			[round(eval("(1.2*{x}) {op} {y}".format(**q_rand)), 2), False],
-			[round(eval("(1.2*{x}) {op} (1.6*{y})".format(**q_rand)), 2), False],
-			[round(eval("{x} {op} (1.6*{y})".format(**q_rand)), 2), False]
+			[round(eval("{x} {op} {y}".format(**q4var)), 2), True],
+			[round(eval("(1.2*{x}) {op} {y}".format(**q4var)), 2), False],
+			[round(eval("(1.2*{x}) {op} (1.6*{y})".format(**q4var)), 2), False],
+			[round(eval("{x} {op} (1.6*{y})".format(**q4var)), 2), False]
 		], key=lambda k: random.random()), "itensPerRow": 4}
 
 		# Question 5, normal picking ...
@@ -2498,10 +2508,17 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 		]; random.shuffle(quest5)
 
 		self.questionDescription  = "Check the correct alternative:"
+		self.correctionCriteriaDescription = "\\textbf{Letter grades by total score:} F = 0 or 1, D = 2, C- = 3, C+ = 4, B+ = 5 and A = 6"
 		self.questions  = [quest1, quest2, quest3, quest4] + quest5[0:2]
-		self.scoreTable = [(5, "A"), (4, "B"), (3, "C"), (2, "D"), (0, "F")]
-		self.labels     = {"score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct questions"}
 		self.conditionByLineLabel = 5
+
+	def calculateScore(self, hits):
+		if   hits >= 6: return 'A'
+		elif hits >= 5: return 'B+'
+		elif hits >= 4: return 'C+'
+		elif hits >= 3: return 'C-'
+		elif hits >= 2: return 'D'
+		else:           return 'F'
 """
 , 'truefalse': r"""
 from MakeTests import QuestionTrueOrFalse
