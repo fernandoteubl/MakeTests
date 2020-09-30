@@ -21,7 +21,7 @@
 class Question:
 	info							dict()   | Information about the current student.
 	def makeVariables(self):        -> None  | Generate randomically all variables of the question.
-	def getQuestionTex(self):       -> str   | Return the questions description, in LaTeX.
+	def getQuestionTex(self, desc): -> str   | Return the questions description, in LaTeX.
 	def answerAreaAspectRate(self): -> float | Aspect rate of Answer Area desired (width/height).
 	def drawAnswerArea(self, img):  -> img   | Draw using cv2 an unfilled area answer in img.
 	def doCorrection(self, img):    -> str   | Correct img answer and return the score.
@@ -35,7 +35,7 @@ class QuestionMatrix(Question):
 	def getScore(self, matrix_answer) -> str                      | Return the score using matrix_answer.
 	def getAnswerKey(self)            -> matrix[boolean][boolean] | Return the correct boolean matrix.
 	IMPLEMENTED: answerAreaAspectRate; drawAnswerArea; doCorrection
-	TO IMPLEMENT: makeVariables; getQuestionText; getAnswerText
+	TO IMPLEMENT: makeVariables; getQuestionTex; getAnswerText
 """
 
 
@@ -807,7 +807,7 @@ class Question:
 		self.info = info
 	def makeVariables(self):
 		raise Exception("Method not implemented.")
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		raise Exception("Method not implemented.")
 	def answerAreaAspectRate(self):
 		raise Exception("Method not implemented.")
@@ -1006,7 +1006,7 @@ class QuestionEssay(QuestionMatrix):
 
 	def makeVariables(self):
 		raise Exception("Method not implemented.")
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		raise Exception("Method not implemented.")
 	def getAnswerText(self, LaTeX):
 		raise Exception("Method not implemented.")
@@ -1077,7 +1077,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 				ret += "{num}:{ans} ".format(num=q+1, ans= self.labels["true"] if self.questions[q][1] else self.labels["false"])			
 		return ret
 
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		tex = self.questionDescription
 
 		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex, label=\\textbf{\\arabic*.}]\n"
@@ -1156,10 +1156,10 @@ class QuestionMultipleChoice(QuestionMatrix):
 					break
 		return ret
 
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		tex = self.questionDescription
 		tex += "\n\n"
-		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex, label=\\textbf{\\arabic*.}]\n"
+		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex, label=\\textbf{" + str(desc['question_number']) + ".\\arabic*.}]\n"
 		for q in self.questions:
 			tex += "\\item {quest}\n\n".format(quest=q['statement'])
 			if "itemsPerRow" in q and q["itemsPerRow"] > 1:
@@ -1270,7 +1270,7 @@ class QuestionQA(QuestionMatrix):
 		self.hlabel = self.labels["questions"]
 		self.vlabel = self.labels["answers"]
 
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		tex = self.question_description + "\n"
 		tex += "\n\\begin{tabularx}{\\textwidth}{|c|c||c|X|}\n\\hline\n"
 		tex += "\\multicolumn{{2}}{{|c||}}{{\\textbf{{{q}}}}} & \\multicolumn{{2}}{{c|}}{{\\textbf{{{a}}}}} \\\\\n".format(q=self.labels['questions'], a=self.labels['answers'])
@@ -1797,7 +1797,7 @@ class Main:
 				tex.addReplaces(self.config['questions']['select'][i]['replaces'])
 				tex.addReplaces({self.config['tex']['answer_text']: ans_text})
 				tex.addTex(self.config['tex']['test']['before'])
-				tex.addTex(questions[i].getQuestionTex())
+				tex.addTex(questions[i].getQuestionTex(desc={'question_number': i+1}))
 				tex.addTex(self.config['tex']['test']['after'])
 
 				# Insert correct answer in answer key
@@ -2380,7 +2380,7 @@ class EssayQuestion(QuestionEssay):
 		import random
 		self.q_subject = random.choice(["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"])
 
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		tex = '''About our solar system, describe the characteristics of planet {}.
 '''.format(self.q_subject)
 		lines_answer_area = 10
@@ -2600,7 +2600,7 @@ class PowerQuestion(QuestionNumber):
 		self.expected_value = self.q_num ** self.q_pow
 		import math
 		self.max_digits = int(math.log10(self.expected_value)) + 1
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		return "Calculate ${n}^{{{p}}}$.".format(n=self.q_num, p=self.q_pow)
 	def getAnswerText(self,LaTeX):
 		return str(self.expected_value)
@@ -2615,7 +2615,7 @@ from MakeTests import QuestionOCR
 class MyQuestionOCR(QuestionOCR):
 	def makeVariables(self):
 		pass
-	def getQuestionTex(self):
+	def getQuestionTex(self, desc):
 		return "Escreva 123"
 	def answerAreaAspectRate(self):
 		return 4/1
