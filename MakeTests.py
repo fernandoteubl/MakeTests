@@ -1030,14 +1030,15 @@ class QuestionEssay(QuestionMatrix):
 #############################
 # BEGIN QUESTION TRUE FALSE #
 class QuestionTrueOrFalse(QuestionMatrix):
-	questions            = None
-	questionDescription  = None
-	scoreTable           = None
-	wrongFactor          = None
-	labels               = None
-	conditionByLineLabel = None
+	questions                     = None
+	questionDescription           = None
+	correctionCriteriaDescription = None
+	labels                        = None
 
 	def makeSetup(self):
+		raise Exception("Method not implemented.")
+
+	def calculateScore(self, correct, wrong, blank):
 		raise Exception("Method not implemented.")
 
 	def answerAreaAspectRate(self):
@@ -1057,17 +1058,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 			elif self.questions[i][1] == False and matrix_answer[1][i] == True:  correct += 1
 			else:                                                                wrong   += 1
 
-		if self.wrongFactor == 0:
-			sum = correct
-		else:
-			from math import ceil
-			sum = ceil(correct - (wrong / self.wrongFactor))
-
-		self.scoreTable.sort(key=lambda x: x[0], reverse=True)
-		for s in self.scoreTable:
-			if s[0] <= sum:
-				return s[1]
-		return self.scoreTable[-1][1]
+		return self.calculateScore(correct, wrong, blank)
 
 	def getAnswerKey(self):
 		rowT = [True  == q[1] for q in self.questions]
@@ -1091,26 +1082,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 			tex += "\\item {quest}\n\n".format(quest=q[0])
 		tex += "\\end{enumerate}"
 
-		# Print correction criteria
-		tex += "\n$\n\\begin{cases}\n"
-		if self.wrongFactor == 0:
-			tex += "X = \\text{{{t}}} \\\\".format(t=self.labels['number_of_right_questions'])
-		else:
-			tex += "X = \\lceil \\text{{{t}}} - \\frac {{\\text{{{f}}}}} {{{wf}}} \\rceil \\\\".format(max=len(self.questions),t=self.labels['number_of_right_questions'], f=self.labels['number_of_wrong_questions'], wf=self.wrongFactor)
-		tex += "\\text{{{}}} = \\begin{{cases}}".format(self.labels['score'])
-		count = 0
-		for s in sorted(self.scoreTable, key=lambda x: x[0], reverse=True):
-			if s[0] == 0:
-				tex += "\\text{{ {} }} {}".format(self.labels['else'], s[1])
-				break
-			tex += " {}\\text{{ {} }}X>={}".format(s[1], self.labels['if'], s[0])
-			if count % self.conditionByLineLabel == self.conditionByLineLabel-1 and count != len(self.scoreTable) - 1:
-				tex += "\\\\"
-			else:
-				tex += "\\text{; }"
-			count += 1
-		tex += "\\end{cases}"
-		tex += "\n\\end{cases}\n$\n"
+		tex += self.correctionCriteriaDescription
 
 		return tex
 # END QUESTION TRUE FALSE #
@@ -1124,12 +1096,11 @@ class QuestionMultipleChoice(QuestionMatrix):
 	questions                     = None
 	questionDescription           = None
 	correctionCriteriaDescription = None
-	conditionByLineLabel          = None
 
 	def makeSetup(self):
 		raise Exception("Method not implemented.")
 
-	def calculateScore(self, hits):
+	def calculateScore(self, correct, wrong, blank):
 		raise Exception("Method not implemented.")
 
 	def answerAreaAspectRate(self):
@@ -1146,17 +1117,22 @@ class QuestionMultipleChoice(QuestionMatrix):
 		self.cols   = [str(i) for i in range(1,1+len(self.questions))]
 
 	def getScore(self, matrix_answer):
-		corrects = 0
+		correct = 0; wrong = 0
 		for j in range(len(matrix_answer[0])):
-			correct = True
+			isCorrect = True
 			for i in range(len(matrix_answer)):
 				if matrix_answer[i][j] != self.questions[j]['alternatives'][i][1]:
-					correct = False
+					isCorrect = False
 					break
-			if correct:
-				corrects += 1
+			if isCorrect:
+				correct += 1
+			else:
+				for i in range(len(matrix_answer)):
+					if matrix_answer[i][j]:
+						wrong += 1
+						break
 
-		return self.calculateScore(corrects)
+		return self.calculateScore(correct, wrong, len(matrix_answer[0]) - correct - wrong)
 
 	def getAnswerKey(self):
 		matrix = [[None for j in range(len(self.questions))] for i in range(len(self.questions[0]['alternatives']))]
@@ -1259,12 +1235,10 @@ class QuestionNumber(QuestionMatrix):
 ######################################
 # BEGIN QUESTION QUESTION AND ANSWER #
 class QuestionQA(QuestionMatrix):
-	full_list_question_answer_text = None
-	list_question_answer_index     = None
-	question_description           = None
-	scoreTable                     = None
-	labels                         = None
-	conditionByLineLabel           = None
+	full_list_question_answer_text   = None
+	list_question_answer_index       = None
+	question_description             = None
+	correction_criteria_cescription  = None
 
 	@staticmethod
 	def auxShuffle(questions, num_questions):
@@ -1278,6 +1252,9 @@ class QuestionQA(QuestionMatrix):
 		return [(quest[i], ans[i]) for i in range(0,num_questions)]
 
 	def makeSetup(self):
+		raise Exception("Method not implemented.")
+
+	def calculateScore(self, correct, total):
 		raise Exception("Method not implemented.")
 
 	def answerAreaAspectRate(self):
@@ -1301,23 +1278,7 @@ class QuestionQA(QuestionMatrix):
             n1=str(q+1), n2=chr(ord('A') + q)+":")
 		tex += "\\hline\n\end{tabularx}\n"
 
-		# Print correction criteria
-		tex += "\n\n$\n\\begin{cases}\n"
-		tex += "X = \\text{{{t}}} \\\\".format(t=self.labels['number_of_right_questions'])
-		tex += "\\text{{{}}} = \\begin{{cases}}".format(self.labels['score'])
-		count = 0
-		for s in sorted(self.scoreTable, key=lambda x: x[0], reverse=True):
-			if s[0] == 0:
-				tex += "\\text{{ {} }} {}".format(self.labels['else'], s[1])
-				break
-			tex += " {}\\text{{ {} }}X>={}".format(s[1], self.labels['if'], s[0])
-			if count % self.conditionByLineLabel == self.conditionByLineLabel-1 and count != len(self.scoreTable) - 1:
-				tex += "\\\\"
-			else:
-				tex += "\\text{; }"
-			count += 1
-		tex += "\\end{cases}"
-		tex += "\n\\end{cases}\n$\n"
+		tex += self.correction_criteria_description
 
 		return tex
 
@@ -1334,7 +1295,7 @@ class QuestionQA(QuestionMatrix):
 
 	def getScore(self, matrix_answer):
 		answerKey = self.getAnswerKey()
-		corrects =0; wrongs = 0
+		correct = 0
 		for i in range(len(matrix_answer)):
 			for j in range(len(matrix_answer[i])):
 				if answerKey[i][j]:
@@ -1350,13 +1311,9 @@ class QuestionQA(QuestionMatrix):
 							valid = False
 							break
 					if valid:
-						corrects += 1
+						correct += 1
 
-		self.scoreTable.sort(key=lambda x: x[0], reverse=True)
-		for s in self.scoreTable:
-			if s[0] <= corrects:
-				return s[1]
-		return self.scoreTable[-1][1]
+		return self.calculateScore(correct, len(matrix_answer[0]))
 
 	def getAnswerKey(self):
 		matrix = [[False for j in range(len(self.cols))] for i in range(len(self.rows))]
@@ -2510,15 +2467,14 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 		self.questionDescription  = "Check the correct alternative:"
 		self.correctionCriteriaDescription = "\\textbf{Letter grades by total score:} F = 0 or 1, D = 2, C- = 3, C+ = 4, B+ = 5 and A = 6"
 		self.questions  = [quest1, quest2, quest3, quest4] + quest5[0:2]
-		self.conditionByLineLabel = 5
 
-	def calculateScore(self, hits):
-		if   hits >= 6: return 'A'
-		elif hits >= 5: return 'B+'
-		elif hits >= 4: return 'C+'
-		elif hits >= 3: return 'C-'
-		elif hits >= 2: return 'D'
-		else:           return 'F'
+	def calculateScore(self, correct, wrong, blank):
+		if   correct >= 6: return 'A'
+		elif correct >= 5: return 'B+'
+		elif correct >= 4: return 'C+'
+		elif correct >= 3: return 'C-'
+		elif correct >= 2: return 'D'
+		else:              return 'F'
 """
 , 'truefalse': r"""
 from MakeTests import QuestionTrueOrFalse
@@ -2548,11 +2504,18 @@ class TrueFalseQuestion(QuestionTrueOrFalse):
 		random.shuffle(all)
 
 		self.questions            = all
+		self.labels               = {"true": "T", "false": "F"}
 		self.questionDescription  = "About Boolean logic, answer the result of the questions below."
-		self.scoreTable           = [(9,"A+"), (8,"A"), (7,"B"), (6,"C"), (5,"D"), (0, "F")]
-		self.wrongFactor          = 3
-		self.labels               = {"true": "T", "false": "F", "score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct questions", "number_of_wrong_questions": "Wrong questions"}
-		self.conditionByLineLabel = 3
+		self.correctionCriteriaDescription = "\\textbf{Letter grades by total score:} F < 4, D- = 4, D+ = 5, C- = 6, C+ = 7, B = 8 and A = 9"
+
+	def calculateScore(self, correct, wrong, blank):
+		if   correct >= 9: return 'A'
+		elif correct >= 8: return 'B'
+		elif correct >= 7: return 'C+'
+		elif correct >= 6: return 'C-'
+		elif correct >= 5: return 'D+'
+		elif correct >= 4: return 'D-'
+		else:              return 'F'
 """
 , 'questionanswer': r"""
 from MakeTests import QuestionQA
@@ -2579,10 +2542,20 @@ class QAQuestion(QuestionQA):
 			[''' Icosagon ''', '''Twenty sides '''],
 		]
 		self.list_question_answer_index = QuestionQA.auxShuffle(self.full_list_question_answer_text, 8)
-		self.question_description = "Referente ao Capítulo 1, associe as Perguntas com as Respostas."
-		self.scoreTable = [(8,"A"), (7,"B"), (6,"B-"), (5,"C"), (4,"D"), (0,"F")]
-		self.labels     = {"questions": "Questions", "answers": "Answers", "score": "Score", "if": "if", "else": "else", "number_of_right_questions": "Correct relationship"}
-		self.conditionByLineLabel = 3
+		self.question_description = "Associate the Questions with the Answers."
+		self.labels     = {"questions": "Questions", "answers": "Answers"}
+		self.correction_criteria_description =  '''\\textbf{Letter grades by total score:} F < 4, D = 4, C = 5, B- = 6, B = 7 and  A = 8
+
+\\textbf{IMPORTANT:} Each question can only be associated with one answer and vice versa. A correct association will be disregarded if there is another association of the same question or answer.
+'''
+
+	def calculateScore(self, correct, total):
+		if   correct >= 8: return 'A'
+		elif correct >= 7: return 'B'
+		elif correct >= 6: return 'B-'
+		elif correct >= 5: return 'C'
+		elif correct >= 4: return 'D'
+		else:              return 'F'
 """
 , 'number': r"""
 from MakeTests import QuestionNumber
