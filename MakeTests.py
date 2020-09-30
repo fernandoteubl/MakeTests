@@ -1002,6 +1002,8 @@ class QuestionMatrix(Question):
 ########################
 # BEGIN QUESTION ESSAY #
 class QuestionEssay(QuestionMatrix):
+	score = None
+
 	def makeVariables(self):
 		raise Exception("Method not implemented.")
 	def getQuestionTex(self):
@@ -1009,9 +1011,10 @@ class QuestionEssay(QuestionMatrix):
 	def getAnswerText(self, LaTeX):
 		raise Exception("Method not implemented.")
 		
-	def setLabels(self, scores, blank_warning):
-		self.cols = scores
-		self.rows = [""]
+	def setLabels(self, score, alias, blank_warning):
+		self.score  = score
+		self.cols   = alias
+		self.rows   = [""]
 		self.hlabel = blank_warning
 		self.vlabel = None
 	def answerAreaAspectRate(self):
@@ -1019,7 +1022,7 @@ class QuestionEssay(QuestionMatrix):
 	def getScore(self, matrix_answer):
 		for i in range(len(self.cols)):
 			if matrix_answer[0][i]:
-				return self.cols[i]
+				return self.score[i]
 	def getAnswerKey(self):
 		return [[False for j in range(len(self.cols))] for i in range(len(self.rows))]
 # END QUESTION ESSAY #
@@ -2186,10 +2189,8 @@ examples = {'config': r'''
 		"student_directory_id": "%NAME%",
 		"final_calc": [
 			"def final_calc(questions, weight):",
-			"  tab = {'F-':0, 'F':26, 'F+':37, 'D-':46, 'D':53, 'D+':59, 'C-':65, 'C':70, 'C+':75, 'B-':80, 'B':84, 'B+':88, 'A-':92, 'A':96, 'A+':100}",
-			"  pts = sum([weight[i] * tab[questions[i]] for i in range(len(questions))])//sum(weight)",
-			"  for k,v in sorted(tab.items(), key=lambda item: item[1], reverse=True):",
-			"    if pts >= v: return k"
+			"  pts = sum([float(weight[i]) * float(questions[i]) for i in range(len(questions))]) / sum(weight)",
+			"  return round(pts, 2)"
 		]
 	},
 	"tex": {
@@ -2367,12 +2368,18 @@ examples = {'config': r'''
 '''
 , 'essay': r"""
 from MakeTests import QuestionEssay
-class MyQuestionEssay(QuestionEssay):
+class EssayQuestion(QuestionEssay):
 	q_subject = None
+
 	def makeVariables(self):
-		self.setLabels(scores=["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F+", "F", "F-"], blank_warning="--- Leave it blank! ---")
+		import collections
+		alias = list(); score = list()
+		for i in range(0, 100+1, 10):
+			alias.append("{}%".format(i)); score.append(i)
+		self.setLabels(score=score, alias=alias, blank_warning="--- Leave it blank! ---")
 		import random
 		self.q_subject = random.choice(["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"])
+
 	def getQuestionTex(self):
 		tex = '''About our solar system, describe the characteristics of planet {}.
 '''.format(self.q_subject)
@@ -2381,6 +2388,7 @@ class MyQuestionEssay(QuestionEssay):
 		for l in range(lines_answer_area): tex += (" \\\\")
 		tex += "\\hline\\end{tabularx}"
 		return tex
+
 	def getAnswerText(self,LaTeX):
 		return ""
 """
@@ -2465,16 +2473,23 @@ class MyQuestionMultipleChoice(QuestionMultipleChoice):
 		]; random.shuffle(quest5)
 
 		self.questionDescription  = "Check the correct alternative:"
-		self.correctionCriteriaDescription = "\\textbf{Letter grades by total score:} F = 0 or 1, D = 2, C- = 3, C+ = 4, B+ = 5 and A = 6"
 		self.questions  = [quest1, quest2, quest3, quest4] + quest5[0:2]
+		self.correctionCriteriaDescription = '''
+\\begin{center}
+\\begin{tabular}{|  c  |    c   |    c   |    c   |    c   |    c   |    c   |}  \\hline
+\\textbf{Correct qty:} &   0-1  &    2   &    3   &    4   &    5   &    6   \\\\ \\hline
+\\textbf{Score:}       &   0\\% &  20\\% &  40\\% &  60\\% &  80\\% & 100\\% \\\\ \\hline
+\\end{tabular}
+\\end{center}
+'''
 
 	def calculateScore(self, correct, wrong, blank):
-		if   correct >= 6: return 'A'
-		elif correct >= 5: return 'B+'
-		elif correct >= 4: return 'C+'
-		elif correct >= 3: return 'C-'
-		elif correct >= 2: return 'D'
-		else:              return 'F'
+		if   correct >= 6: return 100
+		elif correct >= 5: return 80
+		elif correct >= 4: return 60
+		elif correct >= 3: return 40
+		elif correct >= 2: return 20
+		else:              return 0
 """
 , 'truefalse': r"""
 from MakeTests import QuestionTrueOrFalse
@@ -2506,16 +2521,23 @@ class MyQuestionTrueFalse(QuestionTrueOrFalse):
 		self.questions            = all
 		self.labels               = {"true": "T", "false": "F"}
 		self.questionDescription  = "About Boolean logic, answer the result of the questions below."
-		self.correctionCriteriaDescription = "\\textbf{Letter grades by total score:} F < 4, D- = 4, D+ = 5, C- = 6, C+ = 7, B = 8 and A = 9"
+		self.correctionCriteriaDescription = '''
+\\begin{center}
+\\begin{tabular}{|  c  |    c   |    c   |    c   |    c   |    c   |    c   |    c   |}   \\hline
+\\textbf{Correct qty:} &   0-3  &    4   &    5   &    6   &    7   &    8   &    9   \\\\ \\hline
+\\textbf{Score:}       &   0\\% &  10\\% &  20\\% &  40\\% &  60\\% &  80\\% & 100\\% \\\\ \\hline
+\\end{tabular}
+\\end{center}
+'''
 
 	def calculateScore(self, correct, wrong, blank):
-		if   correct >= 9: return 'A'
-		elif correct >= 8: return 'B'
-		elif correct >= 7: return 'C+'
-		elif correct >= 6: return 'C-'
-		elif correct >= 5: return 'D+'
-		elif correct >= 4: return 'D-'
-		else:              return 'F'
+		if   correct >= 9: return 100
+		elif correct >= 8: return 80
+		elif correct >= 7: return 60
+		elif correct >= 6: return 40
+		elif correct >= 5: return 20
+		elif correct >= 4: return 10
+		else:              return 0
 """
 , 'questionanswer': r"""
 from MakeTests import QuestionQA
@@ -2544,22 +2566,28 @@ class MyQuestionQAnswer(QuestionQA):
 		self.list_question_answer_index = QuestionQA.auxShuffle(self.full_list_question_answer_text, 8)
 		self.question_description = "Associate the Questions with the Answers."
 		self.labels     = {"questions": "Questions", "answers": "Answers"}
-		self.correction_criteria_description =  '''\\textbf{Letter grades by total score:} F < 4, D = 4, C = 5, B- = 6, B = 7 and  A = 8
-
+		self.correction_criteria_description =  '''
 \\textbf{IMPORTANT:} Each question can only be associated with one answer and vice versa. A correct association will be disregarded if there is another association of the same question or answer.
+
+\\begin{center}
+\\begin{tabular}{|  c  |    c   |    c   |    c   |    c   |    c   |    c   |}   \\hline
+\\textbf{Correct qty:} &   0-3  &    4   &    5   &    6   &    7   &    8   \\\\ \\hline
+\\textbf{Score:}       &   0\\% &  20\\% &  40\\% &  60\\% &  80\\% & 100\\% \\\\ \\hline
+\\end{tabular}
+\\end{center}
 '''
 
 	def calculateScore(self, correct, total):
-		if   correct >= 8: return 'A'
-		elif correct >= 7: return 'B'
-		elif correct >= 6: return 'B-'
-		elif correct >= 5: return 'C'
-		elif correct >= 4: return 'D'
-		else:              return 'F'
+		if   correct >= 8: return 100
+		elif correct >= 7: return 80
+		elif correct >= 6: return 60
+		elif correct >= 5: return 40
+		elif correct >= 4: return 20
+		else:              return 0
 """
 , 'number': r"""
 from MakeTests import QuestionNumber
-class MyQuestionNumber(QuestionNumber):
+class PowerQuestion(QuestionNumber):
 	q_num = None
 	q_pow = None
 	def makeSetup(self):
@@ -2578,9 +2606,9 @@ class MyQuestionNumber(QuestionNumber):
 		return str(self.expected_value)
 	def getScoreFromNumber(self, num):
 		if num is None:
-			return "F"
+			return 0
 		else:
-			return "A" if num == self.expected_value else "F"
+			return 100 if num == self.expected_value else 0
 """
 , 'ocr': r"""
 from MakeTests import QuestionOCR
@@ -2594,7 +2622,7 @@ class MyQuestionOCR(QuestionOCR):
 	def getAnswerText(self,LaTeX):
 		return "123"
 	def getScore(self, text):
-		return "A" if text == "123" else "F"
+		return 100 if text == "123" else 0
 """
 }
 
