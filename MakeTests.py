@@ -1121,13 +1121,15 @@ class QuestionTrueOrFalse(QuestionMatrix):
 ##################################
 # BEGIN QUESTION MULTIPLE CHOICE #
 class QuestionMultipleChoice(QuestionMatrix):
-	questions           = None
-	scoreTable          = None
-	questionDescription = None
-	labels              = None
-	conditionByLineLabel = None
+	questions                     = None
+	questionDescription           = None
+	correctionCriteriaDescription = None
+	conditionByLineLabel          = None
 
 	def makeSetup(self):
+		raise Exception("Method not implemented.")
+
+	def calculateScore(self, hits):
 		raise Exception("Method not implemented.")
 
 	def answerAreaAspectRate(self):
@@ -1153,11 +1155,8 @@ class QuestionMultipleChoice(QuestionMatrix):
 					break
 			if correct:
 				corrects += 1
-		self.scoreTable.sort(key=lambda x: x[0], reverse=True)
-		for s in self.scoreTable:
-			if s[0] <= corrects:
-				return s[1]
-		return self.scoreTable[-1][1]
+
+		return self.calculateScore(corrects)
 
 	def getAnswerKey(self):
 		matrix = [[None for j in range(len(self.questions))] for i in range(len(self.questions[0]['alternatives']))]
@@ -1194,23 +1193,7 @@ class QuestionMultipleChoice(QuestionMatrix):
 				tex += "\\end{multicols}"
 		tex += "\end{enumerate}"
 
-		# Print correction criteria
-		tex += "\n\n$\n\\begin{cases}\n"
-		tex += "X = \\text{{{t}}} \\\\".format(t=self.labels['number_of_right_questions'])
-		tex += "\\text{{{}}} = \\begin{{cases}}".format(self.labels['score'])
-		count = 0
-		for s in sorted(self.scoreTable, key=lambda x: x[0], reverse=True):
-			if s[0] == 0:
-				tex += "\\text{{ {} }} {}".format(self.labels['else'], s[1])
-				break
-			tex += " {}\\text{{ {} }}X>={}".format(s[1], self.labels['if'], s[0])
-			if count % self.conditionByLineLabel == self.conditionByLineLabel-1 and count != len(self.scoreTable) - 1:
-				tex += "\\\\"
-			else:
-				tex += "\\text{; }"
-			count += 1
-		tex += "\\end{cases}"
-		tex += "\n\\end{cases}\n$\n"
+		tex += self.correctionCriteriaDescription
 
 		return tex
 # END QUESTION MULTIPLE CHOICE #
