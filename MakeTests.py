@@ -2367,7 +2367,7 @@ examples = {'config': r'''
 '''
 , 'essay': r"""
 from MakeTests import QuestionEssay
-class EssayQuestion(QuestionEssay):
+class MyQuestionEssay(QuestionEssay):
 	q_subject = None
 	def makeVariables(self):
 		self.setLabels(scores=["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "D-", "F+", "F", "F-"], blank_warning="--- Leave it blank! ---")
@@ -2386,7 +2386,7 @@ class EssayQuestion(QuestionEssay):
 """
 , 'choices': r"""
 from MakeTests import QuestionMultipleChoice
-class MultipleChoiceQuestion(QuestionMultipleChoice):
+class MyQuestionMultipleChoice(QuestionMultipleChoice):
 	def makeSetup(self):
 		import random
 		import numpy as np
@@ -2478,7 +2478,7 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 """
 , 'truefalse': r"""
 from MakeTests import QuestionTrueOrFalse
-class TrueFalseQuestion(QuestionTrueOrFalse):
+class MyQuestionTrueFalse(QuestionTrueOrFalse):
 	def makeSetup(self):
 		import random
 		grp1 = [
@@ -2519,7 +2519,7 @@ class TrueFalseQuestion(QuestionTrueOrFalse):
 """
 , 'questionanswer': r"""
 from MakeTests import QuestionQA
-class QAQuestion(QuestionQA):
+class MyQuestionQAnswer(QuestionQA):
 	def makeSetup(self):
 		self.full_list_question_answer_text = [
 			[''' Triangle ''', '''Three sides '''],
@@ -2559,7 +2559,7 @@ class QAQuestion(QuestionQA):
 """
 , 'number': r"""
 from MakeTests import QuestionNumber
-class PowerQuestion(QuestionNumber):
+class MyQuestionNumber(QuestionNumber):
 	q_num = None
 	q_pow = None
 	def makeSetup(self):
@@ -2584,7 +2584,7 @@ class PowerQuestion(QuestionNumber):
 """
 , 'ocr': r"""
 from MakeTests import QuestionOCR
-class QualquerNome(QuestionOCR):
+class MyQuestionOCR(QuestionOCR):
 	def makeVariables(self):
 		pass
 	def getQuestionTex(self):
