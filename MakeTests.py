@@ -656,6 +656,8 @@ class LaTeX:
 
 	def addReplaces(self, replaces):
 		for k, v in replaces.items():
+			if type(v) is list:
+				v = "\n".join(v)
 			if type(k) is not str or type(v) is not str:
 				raise Exception("LaTeX.addReplaces dict must be a str:str!")
 			self.replaces[k] = v.replace("_","\_")
@@ -2216,6 +2218,12 @@ examples = {'config': r'''
 			"%INITIALLING_ABBREVIATION_LABEL%": "Initials",
 			"%ANSWER_AREA_BEFORE%": "\\textbf{Answer to question %COUNT%:}",
 			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Remark:}} Fill up the corresponding circle without smudging.",
+			"%INSTRUCTIONS%": """\\begin{footnotesize} \\textbf{Instructions:}
+\\begin{itemize}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
+	\\item (some instruction...)
+\\end{itemize}
+\\end{footnotesize}
+""",
 			"%ANSWER_KEY_LABEL%": "Answer Key"
 		},
 		"includes": [
@@ -2246,7 +2254,7 @@ examples = {'config': r'''
 			"\\usepackage{listings}",
 			"",
 				"% http://texdoc.net/texmf-dist/doc/latex/geometry/geometry.pdf",
-				"\\usepackage[includeheadfoot, top=20mm, bottom=10mm, left=15mm, right=15mm, headheight=36mm, headsep=3mm]{geometry}",
+				"\\usepackage[includeheadfoot, top=15mm, bottom=10mm, left=15mm, right=15mm, headheight=28mm, headsep=3mm]{geometry}",
 				"\\pagestyle{fancy}",
 				"\\renewcommand{\\headrulewidth}{0pt} % Remove header line",
 				"\\renewcommand{\\footrulewidth}{0pt} % Remove footer line",
@@ -2304,18 +2312,14 @@ examples = {'config': r'''
 						"\\end{tabular}",
 					"\\fi",
 				"}",
-				"",
 				"\\cfoot{",
 					"\\thepage",
 				"}",
-				"",
-				"",
-				"\\vspace{0cm}",
-				""
+				"%INSTRUCTIONS%"
 			],
 			"before": [
 				"",
-				"\\needspace{1\\baselineskip}",
+				"\\vskip 1\\baselineskip",
 				"\\textbf{Question %COUNT% of %TOTAL% (%PREFIX%):}"
 			],
 			"after": [
@@ -2324,7 +2328,8 @@ examples = {'config': r'''
 				"%ANSWER_AREA_BEFORE% \\\\",
 				"\\includegraphics[width=.9\\textwidth]{%IMAGE_ANSWER_AREA%} \\\\",
 				"%ANSWER_AREA_AFTER% \\\\",
-				"\\end{tabular}}"
+				"\\end{tabular}}",
+				""
 			],
 			"footer": [
 				"\\cleardoublepage{}"
