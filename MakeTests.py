@@ -1967,7 +1967,7 @@ class Main:
 				intermediate_scores = ["Q{q_num}: {score}".format(q_num=i+1, score="?" if intermediate_scores[i] is None else intermediate_scores[i]) for i in range(len(intermediate_scores))]
 				final_score = all_scores[self.correction.fieldnames_final[0]]
 				if final_score is None: final_score = "?"
-				txtScores = "Q{quest_num} = {score}   |   {final} ({scores})".format(quest_name=self.correction.fieldsname_quest[question_num], quest_num=question_num+1, score=score, scores="; ".join(intermediate_scores), final=final_score, final_name=self.correction.fieldnames_final[0])
+				txtScores = "Q{quest_num} = {score}   | {final_name} = {final} ({scores})".format(quest_name=self.correction.fieldsname_quest[question_num], quest_num=question_num+1, score=score, scores="; ".join(intermediate_scores), final=final_score, final_name=self.correction.fieldnames_final[0])
 				b = bh//10; ImageUtils.drawTextInsideTheBox(botBar[b:bh-2*b,b:bw-2*b,:], txtScores, color=(255,0,0))
 
 				ImageUtils.overlayWarpImage(img, topBar, topQuad, np.float32([[0,th],[tw,th],[tw,0],[0,0]]))
