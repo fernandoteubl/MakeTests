@@ -1159,13 +1159,13 @@ class QuestionMultipleChoice(QuestionMatrix):
 		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex, label=\\textbf{\\arabic*.}]\n"
 		for q in self.questions:
 			tex += "\\item {quest}\n\n".format(quest=q['statement'])
-			if "itensPerRow" in q and q["itensPerRow"] > 1:
-				tex += "\\begin{{multicols}}{{{}}}".format(q["itensPerRow"])
+			if "itemsPerRow" in q and q["itemsPerRow"] > 1:
+				tex += "\\begin{{multicols}}{{{}}}".format(q["itemsPerRow"])
 			tex += "\\begin{enumerate}[topsep=-2ex,itemsep=-1ex,partopsep=1ex,parsep=1ex, label=\\textbf{\\Alph*)}]"
 			for i in q['alternatives']:
 				tex += "\\item {alter}\n\n".format(alter=i[0])
 			tex += "\\end{enumerate}"
-			if "itensPerRow" in q and q["itensPerRow"] > 1:
+			if "itemsPerRow" in q and q["itemsPerRow"] > 1:
 				tex += "\\end{multicols}"
 		tex += "\end{enumerate}"
 
@@ -2156,8 +2156,8 @@ examples = {'config': r'''
 		"salt": "",
 		"db_path": "Questions",
 		"select" : [
-			{"path": "Easy",   "weight": 3, "replaces": {"%PREFIX%": "Weight 2"}},
-			{"path": "Easy",   "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Easy/choices",   "weight": 3, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Easy/truefalse", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Hard",   "weight": 3, "replaces": {"%PREFIX%": "Weight 4"}}
@@ -2402,7 +2402,7 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 		plt.clf(); plt.plot(x,y); im_path = self.addImage(plt)
 		quest1 = {  "statement": '''Which function corresponds to the graph below?
 \\begin{{center}} \\includegraphics[width=0.2\\textwidth]{{{im}}} \\end{{center}}
-'''.format(im=im_path), "alternatives": sorted(q1var, key=lambda k: random.random()), "itensPerRow":4 }
+'''.format(im=im_path), "alternatives": sorted(q1var, key=lambda k: random.random()), "itemsPerRow":4 }
 
 		# Question 2 using OpenCV
 		import cv2
@@ -2417,7 +2417,7 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 		im_path = self.addImage(cv_img)
 		quest2 = {  "statement": '''What is the shape of the quadrilateral below?
 \\begin{{center}} \\includegraphics[width=0.1\\textwidth]{{{im}}} \\end{{center}}
-'''.format(im=im_path), "alternatives": sorted(q2var, key=lambda k: random.random()), "itensPerRow":4 }
+'''.format(im=im_path), "alternatives": sorted(q2var, key=lambda k: random.random()), "itemsPerRow":4 }
 
 		# Question 3 using PILLOW
 		from PIL import Image
@@ -2429,7 +2429,7 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 		im_path = self.addImage(cv_pil)
 		quest3 = {  "statement": '''What color is the image below??
 \\begin{{center}} \\includegraphics[width=0.1\\textwidth]{{{im}}} \\end{{center}}
-'''.format(im=im_path), "alternatives": sorted(q3var, key=lambda k: random.random()), "itensPerRow":4 }
+'''.format(im=im_path), "alternatives": sorted(q3var, key=lambda k: random.random()), "itemsPerRow":4 }
 
 		# Question 4 using RANDOM
 		import random
@@ -2440,7 +2440,7 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 			[round(eval("(1.2*{x}) {op} {y}".format(**q4var)), 2), False],
 			[round(eval("(1.2*{x}) {op} (1.6*{y})".format(**q4var)), 2), False],
 			[round(eval("{x} {op} (1.6*{y})".format(**q4var)), 2), False]
-		], key=lambda k: random.random()), "itensPerRow": 4}
+		], key=lambda k: random.random()), "itemsPerRow": 4}
 
 		# Question 5, normal picking ...
 		quest5 = [
@@ -2449,19 +2449,19 @@ class MultipleChoiceQuestion(QuestionMultipleChoice):
 				["The Candle",    False],
 				["The Lamp",      False],
 				["The newspaper", False],
-			], key=lambda k: random.random()), "itensPerRow":2 },
+			], key=lambda k: random.random()), "itemsPerRow":2 },
 			{  "statement": "Look at this series: $2, 1, (1/2), (1/4), ...$ What number should come next?", "alternatives": sorted([
 				["$(1/3)$",  False],
 				["$(1/8)$",  True],
 				["$(2/8)$",  False],
 				["$(1/16)$", False]
-			], key=lambda k: random.random()), "itensPerRow":4 },
+			], key=lambda k: random.random()), "itemsPerRow":4 },
 			{  "statement": "Odometer is to mileage as compass is to ...", "alternatives": sorted([
 				["Direction", True],
 				["Speed",     False],
 				["Hiking",    False],
 				["Needle",    False],
-			], key=lambda k: random.random()), "itensPerRow":2 },
+			], key=lambda k: random.random()), "itemsPerRow":2 },
 		]; random.shuffle(quest5)
 
 		self.questionDescription  = "Check the correct alternative:"
