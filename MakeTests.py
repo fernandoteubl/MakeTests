@@ -2192,7 +2192,10 @@ examples = {'config': r'''
 		"final_calc": [
 			"def final_calc(questions, weight):",
 			"  pts = sum([float(weight[i]) * float(questions[i]) for i in range(len(questions))]) / sum(weight)",
-			"  return round(pts, 2)"
+			"  tab = {'A': 85, 'B': 75, 'C': 65, 'D': 50, 'F': 0}",
+			"  for k,v in sorted(tab.items(), key=lambda item: item[1], reverse=True):",
+			"    if pts >= v: return k",
+			"#  return round(pts, 2)"
 		]
 	},
 	"tex": {
@@ -2220,8 +2223,15 @@ examples = {'config': r'''
 			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Remark:}} Fill up the corresponding circle without smudging.",
 			"%INSTRUCTIONS%": """\\begin{footnotesize} \\textbf{Instructions:}
 \\begin{itemize}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
-	\\item (some instruction...)
+	\\item Do not use the answer area as a draft. Fill out the answer circles only when you are sure.
+	\\item Conversion criteria:
 \\end{itemize}
+\\begin{center}
+\\begin{tabular}{|    c    |       c       |       c       |       c       |       c       |       c      |}     \\hline
+\\textbf{Score}            & [ 0\\%,50\\%[ & [50\\%,65\\%[ & [65\\%,75\\%[ & [75\\%,85\\%[ & [85\\%,100\\%] \\\\ \\hline
+\\textbf{Grade}            &       F       &       D       &       C       &       B       &       A        \\\\ \\hline
+\\end{tabular}
+\\end{center}
 \\end{footnotesize}
 """,
 			"%ANSWER_KEY_LABEL%": "Answer Key"
