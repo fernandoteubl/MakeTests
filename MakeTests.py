@@ -1738,6 +1738,7 @@ class Main:
 
 	def makeTests(self):
 		timestamp = Utils.getTimestamp()
+		answer_area_at_the_beginning = False if self.config['tex']['answer_area_at_the_beginning'] == 0 else True
 
 		# Initiate output tests
 		tex = LaTeX(sufix_temp_dir="Tests", temporary_directory=self.temp_dir)
@@ -1801,17 +1802,34 @@ class Main:
 			# Begin new student
 			tex.addTex(self.config['tex']['test']['header'])
 			answerKey.addTex(self.config['tex']['answer_key']['before'])
-			
+
+			if answer_area_at_the_beginning:
+				for i in range(len(questions)):
+					# Generate an unique code for each question
+					code = str(uniqueid)+"-"+str(student_idx)+"-"+str(i)
+					img, ans_img = ImageUtils.makeAnswerArea(code, questions[i].answerAreaAspectRate())
+					questions[i].drawAnswerArea(ans_img)
+					ans_area_image_path = tex.addImage(img,prefix="AnswerArea-", extension=".png")
+					tex.addReplaces({self.config['tex']['question_image_answer_area']: ans_area_image_path})
+
+					# Insert question description in tex
+					tex.addReplaces({self.config['tex']['question_counter']: str(i+1)})
+					tex.addReplaces(self.config['questions']['select'][i]['replaces'])
+
+					tex.addTex(self.config['tex']['test']['answer'])
+					
+
 			# Insert questions in tex
 			for i in range(len(questions)):
 				if self.verbose > 2: print("\t\t\t{}".format(questions[i].__class__.__name__))
 
-				# Generate an unique code for each question
-				code = str(uniqueid)+"-"+str(student_idx)+"-"+str(i)
-				img, ans_img = ImageUtils.makeAnswerArea(code, questions[i].answerAreaAspectRate())
-				questions[i].drawAnswerArea(ans_img)
-				ans_area_image_path = tex.addImage(img,prefix="AnswerArea-", extension=".png")
-				tex.addReplaces({self.config['tex']['question_image_answer_area']: ans_area_image_path})
+				if not answer_area_at_the_beginning:
+					# Generate an unique code for each question
+					code = str(uniqueid)+"-"+str(student_idx)+"-"+str(i)
+					img, ans_img = ImageUtils.makeAnswerArea(code, questions[i].answerAreaAspectRate())
+					questions[i].drawAnswerArea(ans_img)
+					ans_area_image_path = tex.addImage(img,prefix="AnswerArea-", extension=".png")
+					tex.addReplaces({self.config['tex']['question_image_answer_area']: ans_area_image_path})
 
 				# Get the correct answer
 				ans_text = questions[i].getAnswerText(LaTeX=True)
@@ -1822,6 +1840,8 @@ class Main:
 				tex.addReplaces({self.config['tex']['answer_text']: ans_text})
 				tex.addTex(self.config['tex']['test']['before'])
 				tex.addTex(questions[i].getQuestionTex(desc={'question_number': i+1}))
+				if not answer_area_at_the_beginning:
+					tex.addTex(self.config['tex']['test']['answer'])
 				tex.addTex(self.config['tex']['test']['after'])
 
 				# Insert correct answer in answer key
@@ -2223,6 +2243,7 @@ examples = {'config': r'''
 		]
 	},
 	"tex": {
+		"answer_area_at_the_beginning"                                  : 0,
 		"max_pages"                                                     : 6,
 		"qrcode_id_must_be_concatenated_with_dash_plus_the_page_number" : "%QRCODE_ID%",
 		"question_image_answer_area"                                    : "%IMAGE_ANSWER_AREA%",
@@ -2245,10 +2266,10 @@ examples = {'config': r'''
 			"%SIGNING_ABBREVIATION_LABEL%": "Sign",
 			"%INITIALLING_ABBREVIATION_LABEL%": "Initials",
 			"%ANSWER_AREA_BEFORE%": "\\textbf{Answer to question %COUNT%:}",
-			"%ANSWER_AREA_AFTER%": "\\textbf{\\underline{Remark:}} Fill up the corresponding circle without smudging.",
+			"%ANSWER_AREA_AFTER%": "",
 			"%INSTRUCTIONS%": """\\begin{footnotesize} \\textbf{Instructions:}
 \\begin{itemize}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
-	\\item Do not use the answer area as a draft. Fill out the answer circles only when you are sure.
+	\\item \\textbf{\\underline{Remark:}} Fill up the corresponding circle without smudging.
 	\\item There are \\pageref{LastPage} pages and %TOTAL% questions. Make sure you have received all the sheets and the questions are legible.
 	\\item The score is calculated by the weighted arithmetic mean of all questions (there is no rounding).
 	\\item Conversion criteria:
@@ -2362,7 +2383,7 @@ examples = {'config': r'''
 				"\\vskip 1\\baselineskip",
 				"\\textbf{Question %COUNT% of %TOTAL% (%PREFIX%):}"
 			],
-			"after": [
+			"answer": [
 				"",
 				"\\noindent\\makebox[\\textwidth]{\\begin{tabular}{c}",
 				"%ANSWER_AREA_BEFORE% \\\\",
@@ -2370,6 +2391,8 @@ examples = {'config': r'''
 				"%ANSWER_AREA_AFTER% \\\\",
 				"\\end{tabular}}",
 				""
+			],
+			"after": [
 			],
 			"footer": [
 				"\\cleardoublepage{}"
