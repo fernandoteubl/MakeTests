@@ -295,6 +295,12 @@ class Utils:
 		with open(filename, 'rb') as file:
 			raw = file.read(32)
 		return chardet.detect(raw)['encoding']
+
+	@staticmethod
+	def getTimestamp():
+		import time
+		t = time.localtime(time.time())
+		return "{Y:04d}-{M:02d}-{D:02d}T{h:02d}:{m:02d}:{s:02d}".format(Y=t.tm_year,M=t.tm_mon,D=t.tm_mday,h=t.tm_hour,m=t.tm_min,s=t.tm_sec,Z=t.tm_zone)
 # END UTILS #
 #############
 
@@ -660,6 +666,8 @@ class LaTeX:
 				v = "\n".join(v)
 			if type(k) is not str or type(v) is not str:
 				raise Exception("LaTeX.addReplaces dict must be a str:str!")
+			for kk, vv in self.replaces.items(): # Replace from previous replaces
+				v = v.replace(kk, vv)
 			self.replaces[k] = v.replace("_","\_")
 
 	def addInclude(self, inc):
@@ -1719,9 +1727,12 @@ class Main:
 					yield qrcode_valid_student, qrcode_page, countour
 
 	def makeTests(self):
+		timestamp = Utils.getTimestamp()
+
 		# Initiate output tests
 		tex = LaTeX(sufix_temp_dir="Tests", temporary_directory=self.temp_dir)
 		tex.addReplaces({self.config['tex']['question_total']: str(len(self.selected))})
+		tex.addReplaces({self.config['tex']['timestamp']: timestamp})
 		tex.addReplaces(self.config['tex']['replaces'])
 		for i in self.config['tex']['includes']:
 			tex.addInclude(i)
@@ -1730,6 +1741,7 @@ class Main:
 		#Initiate output answer key
 		answerKey = LaTeX(sufix_temp_dir="AnswerKey", temporary_directory=self.temp_dir)
 		answerKey.addReplaces({self.config['tex']['question_total']: str(len(self.selected))})
+		answerKey.addReplaces({self.config['tex']['timestamp']: timestamp})
 		answerKey.addReplaces(self.config['tex']['replaces'])
 		for i in self.config['tex']['includes']:
 			answerKey.addInclude(i)
@@ -2199,11 +2211,12 @@ examples = {'config': r'''
 		]
 	},
 	"tex": {
-		"max_pages"                                                     : 4,
+		"max_pages"                                                     : 6,
 		"qrcode_id_must_be_concatenated_with_dash_plus_the_page_number" : "%QRCODE_ID%",
 		"question_image_answer_area"                                    : "%IMAGE_ANSWER_AREA%",
 		"question_counter"                                              : "%COUNT%",
 		"question_total"                                                : "%TOTAL%",
+		"timestamp"                                                     : "%TIMESTAMP%",
 		"answer_text"                                                   : "%ANSWER_TEXT%",
 		"replaces":{
 			"%UNIVERSITY%": "University Name",
@@ -2224,6 +2237,7 @@ examples = {'config': r'''
 			"%INSTRUCTIONS%": """\\begin{footnotesize} \\textbf{Instructions:}
 \\begin{itemize}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
 	\\item Do not use the answer area as a draft. Fill out the answer circles only when you are sure.
+	\\item The score is calculated by the weighted arithmetic mean of all questions.
 	\\item Conversion criteria:
 \\end{itemize}
 \\begin{center}
@@ -2234,7 +2248,8 @@ examples = {'config': r'''
 \\end{center}
 \\end{footnotesize}
 """,
-			"%ANSWER_KEY_LABEL%": "Answer Key"
+			"%ANSWER_KEY_LABEL%": "Answer Key",
+			"%CREATION_ID%": "\\begin{scriptsize}{\\color{red} %TIMESTAMP%}\\end{scriptsize}"
 		},
 		"includes": [
 //			"image directory path"
@@ -2325,6 +2340,9 @@ examples = {'config': r'''
 				"\\cfoot{",
 					"\\thepage",
 				"}",
+				"\\rhead{",
+					"%CREATION_ID%",
+				"}",
 				"%INSTRUCTIONS%"
 			],
 			"before": [
@@ -2357,6 +2375,7 @@ examples = {'config': r'''
 				"\\hline",
 				"\\end{tabular}",
 				"\\end{center}",
+				"%CREATION_ID%",
 				""
 			],
 			"before": [
@@ -2375,7 +2394,6 @@ examples = {'config': r'''
 				""
 			],
 			"footer": [
-				""
 			]
 		}
 	}
