@@ -785,19 +785,20 @@ class LaTeX:
 				f.write('\n')
 			f.close()
 
-		# Compile LaTeX
-		import time
-		time.sleep(1) # BUG: Sometimes the image is not ready (flushed). Specific case: AnswerArea.png
-		cmd = [ "pdflatex", "-halt-on-error", "-file-line-error", "-output-format=pdf", filename + '.tex' ]
-		proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+		# Compile LaTeX (Two LaTeX runs are necessary for getting the correct reference.)
+		for x in range(2):
+			import time
+			time.sleep(1) # BUG: Sometimes the image is not ready (flushed). Specific case: AnswerArea.png
+			cmd = [ "pdflatex", "-halt-on-error", "-file-line-error", "-output-format=pdf", filename + '.tex' ]
+			proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
-		# Get output
-		try:
-			for stdout_line in iter(proc.stdout.readline, ""):
-				yield stdout_line
-		except UnicodeDecodeError as e:
-			proc.kill()
-			raise e
+			# Get output
+			try:
+				for stdout_line in iter(proc.stdout.readline, ""):
+					yield stdout_line
+			except UnicodeDecodeError as e:
+				proc.kill()
+				raise e
 
 		# Check return
 		return_code = proc.wait()
@@ -1878,6 +1879,8 @@ class Main:
 			if self.verbose > 1: raise Exception(e.args)
 			else:                raise Exception("Error to genereate {}". format(self.config['output']['answer_key']))
 
+		if self.verbose >= 1: print("Timestamp: {}".format(timestamp))
+
 	def doCorrection(self, img):
 		# Resize for large image
 		img = ImageUtils.conditionalResize(img, max_res=ImageUtils.MAX_IMAGE_RES)
@@ -2246,6 +2249,7 @@ examples = {'config': r'''
 			"%INSTRUCTIONS%": """\\begin{footnotesize} \\textbf{Instructions:}
 \\begin{itemize}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
 	\\item Do not use the answer area as a draft. Fill out the answer circles only when you are sure.
+	\\item There are \\pageref{LastPage} pages and %TOTAL% questions. Make sure you have received all the sheets and the questions are legible.
 	\\item The score is calculated by the weighted arithmetic mean of all questions (there is no rounding).
 	\\item Conversion criteria:
 \\end{itemize}
@@ -2286,6 +2290,7 @@ examples = {'config': r'''
 			"\\usepackage{enumitem}",
 			"\\usepackage{tabulary}",
 			"\\usepackage{listings}",
+			"\\usepackage{lastpage}",
 			"",
 				"% http://texdoc.net/texmf-dist/doc/latex/geometry/geometry.pdf",
 				"\\usepackage[includeheadfoot, top=15mm, bottom=10mm, left=15mm, right=15mm, headheight=28mm, headsep=3mm]{geometry}",
@@ -2347,7 +2352,7 @@ examples = {'config': r'''
 					"\\fi",
 				"}",
 				"\\cfoot{",
-					"\\thepage",
+					"\\thepage \\hspace{1pt} / \\pageref{LastPage}",
 				"}",
 				"\\rhead{",
 					"%CREATION_ID%",
