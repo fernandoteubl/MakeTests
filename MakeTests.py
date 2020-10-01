@@ -706,6 +706,15 @@ class LaTeX:
 						img.savefig(full_path)
 					except AttributeError as e:
 						raise AttributeError(e)
+
+		# Check file
+		try:
+			f = open(full_path)
+		except IOError as e:
+			raise IOError(e)
+		finally:
+			f.close()
+
 		return full_path
 
 	def addTex(self, tex):
@@ -2237,7 +2246,7 @@ examples = {'config': r'''
 			"%INSTRUCTIONS%": """\\begin{footnotesize} \\textbf{Instructions:}
 \\begin{itemize}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex]
 	\\item Do not use the answer area as a draft. Fill out the answer circles only when you are sure.
-	\\item The score is calculated by the weighted arithmetic mean of all questions.
+	\\item The score is calculated by the weighted arithmetic mean of all questions (there is no rounding).
 	\\item Conversion criteria:
 \\end{itemize}
 \\begin{center}
