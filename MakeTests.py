@@ -2350,12 +2350,10 @@ examples = {'config': r'''
 						"\\hline",
 						"\\end{tabular}",
 					"\\fi",
+					"\\hspace*{\\fill} %CREATION_ID%",
 				"}",
 				"\\cfoot{",
 					"\\thepage \\hspace{1pt} / \\pageref{LastPage}",
-				"}",
-				"\\rhead{",
-					"%CREATION_ID%",
 				"}",
 				"%INSTRUCTIONS%"
 			],
