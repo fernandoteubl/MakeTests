@@ -1,3 +1,6 @@
+# What is it?
+* See the [demo video](https://drive.google.com/file/d/1npVosL80B5xCOx8zNdWy3lCc8zuD4b2e/view?usp=sharing)
+
 # Manual
 
 ## Install
