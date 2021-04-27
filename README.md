@@ -1,6 +1,10 @@
 # What is it?
 * See the [demo video](https://drive.google.com/file/d/1npVosL80B5xCOx8zNdWy3lCc8zuD4b2e/view?usp=sharing)
 
+# Publications
+
+* Teubl, F.; Batista, V.R.; Zampirolli, F.A. **MakeTests: Generate and Correct Individualized Questions with Many Styles**. International Conference on Computer Supported Education. CSEDU. pp. 245-253. 2021.
+
 # Manual
 
 ## Install
