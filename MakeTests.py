@@ -70,8 +70,10 @@ except ImportError as error:
                         "pytesseract": ["pip",   "install",                      "pytesseract"]}
 		if cur_version < (3,7):
 			package_name["cv2"] = ["conda", "install", "-c", "menpo",       "opencv3"]
-		else:
+		elif cur_version < (3,8):
 			package_name["cv2"] = ["conda", "install", "-c", "anaconda",     "opencv"]
+		else:
+			package_name["cv2"] = ["pip", "install", "opencv",               "opencv-python" ]
 
 		print(error.msg)
 		if error.name not in package_name:
