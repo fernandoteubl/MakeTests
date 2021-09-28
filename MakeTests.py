@@ -530,7 +530,7 @@ class ImageUtils:
 			thresh_img = cv2.Canny(gray, lower, upper,apertureSize=3)
 			edges = cv2.morphologyEx(thresh_img, cv2.MORPH_CLOSE, el)
 
-		_, contours, hierarchy = cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+		contours, hierarchy = cv2.findContours(edges,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 		tot = 0
 		if len(contours):
@@ -937,7 +937,7 @@ class QuestionMatrix(Question):
 					border_h = cell_h * border; border_w = cell_w * border
 					if c[1]-offset_u > border_h and c[1]-offset_u < cell_h-border_h and c[0]-offset_l > border_w and c[0]-offset_l < cell_w-border_w:
 						roi_gray = img_gray[yo:yo+ho,xo:xo+wo]
-						circle_mask = np.zeros((ho, wo), np.uint8)
+						circle_mask = np.zeros(roi_gray.shape, np.uint8)
 						cv2.circle(circle_mask,(c[0],c[1]),c[2],255,-1)
 						avg = cv2.mean(roi_gray, mask=circle_mask)[::-1][-1]
 						ansRow.append({'checked': avg>200, 'center': (xo+c[0], yo+c[1]), 'radius': c[2], 'answer_key': answerKey[i][j]})
