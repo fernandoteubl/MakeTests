@@ -1601,7 +1601,7 @@ class Main:
 		with open(config_file) as f:
 			import os
 			os.chdir(os.path.dirname(os.path.realpath(config_file))) # All path will be relative to the config file...
-			Utils.jsonMerge(self.config, Utils.json2dict(f.read()), raiseErrorFromUnexpected=True)
+			Utils.jsonMerge(self.config, Utils.json2dict(f.read()), raiseErrorFromUnexpected=False)
 			f.close()
 		# END CONFIG.JSON
 
@@ -2168,11 +2168,11 @@ examples = {'config': r'''
 		"salt": "",
 		"db_path": "Questions",
 		"select" : [
-			{"path": "Easy/choices",   "weight": 3, "replaces": {"%PREFIX%": "Weight 2"}},
+			{"path": "Easy/choices",   "weight": 3, "replaces": {"%PREFIX%": "Weight 3"}},
 			{"path": "Easy/truefalse", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
 			{"path": "Medium", "weight": 2, "replaces": {"%PREFIX%": "Weight 2"}},
-			{"path": "Hard",   "weight": 3, "replaces": {"%PREFIX%": "Weight 4"}}
+			{"path": "Hard",   "weight": 4, "replaces": {"%PREFIX%": "Weight 4"}}
 		]
 	},
 	"input": {
