@@ -3,16 +3,14 @@
 
 # Publications
 
-* Teubl, F.; Batista, V.R.; Zampirolli, F.A. **MakeTests: Generate and Correct Individualized Questions with Many Styles**. International Conference on Computer Supported Education. CSEDU. pp. 245-253. 2021.
+* Teubl, F., Batista, V.R., Zampirolli, F.d.A. (2022). **MakeTests: A Flexible Generator and Corrector for Hardcopy Exams**. In: Csapó, B., Uhomoibhi, J. (eds) Computer Supported Education. CSEDU 2021. Communications in Computer and Information Science, vol 1624. Springer, Cham. https://doi.org/10.1007/978-3-031-14756-2_15
+
+* Teubl, F.; Batista, V. and Zampirolli, F. (2021). **MakeTests: Generate and Correct Individualized Questions with Many Styles**. In Proceedings of the 13th International Conference on Computer Supported Education - Volume 1: CSEDU; ISBN 978-989-758-502-9; ISSN 2184-5026, SciTePress, pages 245-253. https://doi.org/10.5220/0010337902450253
 
 # Manual
 
 ## Install
 
-* MACPORT
-  * Install [MacPorts](https://www.macports.org)
-    * Execute in Terminal:
-    * `sudo port -v selfupdate`
 * ZBAR
   * MAC OSX:
     * `xcode-select --install`
