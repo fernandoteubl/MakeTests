@@ -2,24 +2,6 @@
 # -*- coding: utf-8 -*-
 
 
-## TIPS
-#	MACPORT
-#		Install MacPorts https://www.macports.org
-#		Execute in Terminal:
-#			sudo port -v selfupdate
-#		
-#	CONDA
-#		MAC OSX:
-#			brew install miniconda
-#
-#	ZBAR
-#		MAC OSX:
-#			xcode-select --install
-#			ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-#			brew install zbar
-#		LINUX:
-#			sudo apt-get install libzbar-dev libzbar0
-
 
 """
 class Question:
