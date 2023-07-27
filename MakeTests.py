@@ -41,7 +41,7 @@ elif _platform == "win32":
 	sys.exit("Windows has not yet been tested.")
 
 try:
-	import cv2, qrcode, pyzbar, barcode, PyPDF2, chardet, pytesseract
+	import cv2, qrcode, pyzbar, barcode, PyPDF2, chardet, scipy, pytesseract
 except ImportError as error:
 	print(error.msg)
 	sys.exit(f"Please, install '{error.name}' library...")
