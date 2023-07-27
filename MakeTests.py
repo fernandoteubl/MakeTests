@@ -8,6 +8,10 @@
 #		Execute in Terminal:
 #			sudo port -v selfupdate
 #		
+#	CONDA
+#		MAC OSX:
+#			brew install miniconda
+#
 #	ZBAR
 #		MAC OSX:
 #			xcode-select --install
@@ -55,35 +59,10 @@ elif _platform == "win32":
 	sys.exit("Windows has not yet been tested.")
 
 try:
-	import conda, pip, cv2, qrcode, pyzbar, barcode, PyPDF2, pytesseract
+	import cv2, qrcode, pyzbar, barcode, PyPDF2, chardet, pytesseract
 except ImportError as error:
-	if error.name == "conda":
-		sys.exit("Please, install anaconda3 (https://www.anaconda.com/download) or miniconda3 (https://docs.conda.io/en/latest/miniconda.html).")
-	else:
-		package_name = {"pip":         ["conda", "install", "-c", "anaconda",    "pip"],
-#                        "cv2":         ["pip",   "install",                      "opencv-contrib-python"], # Error: conflict with conda's QT
-                        "qrcode":      ["conda", "install", "-c", "conda-forge", "qrcode"],
-                        "PyPDF2":      ["conda", "install", "-c", "conda-forge", "pypdf2"],
-                        "tesseract":   ["conda", "install", "-c", "conda-forge", "tesseract"],
-                        "pyzbar":      ["pip",   "install",                      "pyzbar"],
-                        "barcode":     ["pip",   "install",                      "python-barcode"],
-                        "pytesseract": ["pip",   "install",                      "pytesseract"]}
-		if cur_version < (3,7):
-			package_name["cv2"] = ["conda", "install", "-c", "menpo",       "opencv3"]
-		elif cur_version < (3,8):
-			package_name["cv2"] = ["conda", "install", "-c", "anaconda",     "opencv"]
-		else:
-			package_name["cv2"] = ["pip", "install", "opencv",               "opencv-python" ]
-
-		print(error.msg)
-		if error.name not in package_name:
-			sys.exit("Please, install {} library...".format(error.name))
-		else:
-			reply = str(input("Do you want try to install {} now with command '{}'? [y/n]".format(error.name, " ".join(package_name[error.name])))).lower().strip()
-		if reply[:1] == 'y':
-			import subprocess
-			subprocess.call(["sudo", sys.executable, "-m"] + package_name.get(error.name, [error.name]))
-		sys.exit()
+	print(error.msg)
+	sys.exit(f"Please, install '{error.name}' library...")
 
 
 
@@ -220,9 +199,9 @@ class Utils:
 			raise Exception("Config file '{}' not found!".format(e.filename))
 		except Exception as e:
 			if inc == "":
-				raise Exception("Parser error: {}".format(e))
+				raise Exception("JSON parser error: {}".format(e))
 			else:
-				raise Exception("Parser error in {}: {}".format(inc, e))
+				raise Exception("JSON parser error in {}: {}".format(inc, e))
 
 	@staticmethod
 	def jsonMerge(json_base, json_extra, raiseErrorFromUnexpected):
