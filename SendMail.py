@@ -61,7 +61,7 @@ def main():
 			import json, re, os, collections
 			config_path = os.path.dirname(os.path.realpath(args.config_file))
 
-			# Parse Tiple Quotes in JSON and convert to array of strings...
+			# Parse Triple Quotes in JSON and convert to array of strings...
 			json_str = ""
 			triple_quotes = False
 			for line in f.read().split("\n"):
