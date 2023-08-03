@@ -2196,14 +2196,14 @@ examples = {'config': r'''
 			"final": "Final_Score"
 		},
 		"student_directory_id": "%NAME%",
-		"final_calc": [
-			"def final_calc(questions, weight):",
-			"  pts = sum([float(weight[i]) * float(questions[i]) for i in range(len(questions))]) / sum(weight)",
-			"  tab = {'A': 85, 'B': 75, 'C': 65, 'D': 50, 'F': 0}",
-			"  for k,v in sorted(tab.items(), key=lambda item: item[1], reverse=True):",
-			"    if pts >= v: return k",
-			"#  return round(pts, 2)"
-		]
+		"final_calc": """
+def final_calc(questions, weight):
+  pts = sum([float(weight[i]) * float(questions[i]) for i in range(len(questions))]) / sum(weight)
+  tab = {'A': 85, 'B': 75, 'C': 65, 'D': 50, 'F': 0}
+  for k,v in sorted(tab.items(), key=lambda item: item[1], reverse=True):
+    if pts >= v: return k
+  #return round(pts, 2)
+"""
 	},
 	"tex": {
 		"answer_area_at_the_beginning"                                  : 0,
