@@ -659,15 +659,15 @@ class LaTeX:
 				f = open( full_path, 'wb' )
 				img.save(f); f.flush(); f.close() # Save now! No cache...
 			except AttributeError:
-				import cv2
-				try: # OpenCV Image?
-					isWritten = cv2.imwrite(full_path, img)
-					if not isWritten:
-						raise Exception("LaTeX.addImage can't write opencv image: {}".format(img))
-				except TypeError as e:
-					try: # matplotlib.pyplot?
-						img.savefig(full_path)
-					except AttributeError as e:
+				try: # matplotlib.pyplot?
+					img.savefig(full_path)
+				except AttributeError as e:
+					import cv2
+					try: # OpenCV Image?
+						isWritten = cv2.imwrite(full_path, img)
+						if not isWritten:
+							raise Exception("LaTeX.addImage can't write opencv image: {}".format(img))
+					except TypeError as e:
 						raise AttributeError(e)
 
 		# Check file
