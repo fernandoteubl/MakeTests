@@ -752,7 +752,7 @@ class LaTeX:
 		for x in range(2):
 			import time
 			time.sleep(1) # BUG: Sometimes the image is not ready (flushed). Specific case: AnswerArea.png
-			cmd = [ "pdflatex", "-halt-on-error", "-file-line-error", "-output-format=pdf", filename + '.tex' ]
+			cmd = [ "pdflatex", "-shell-escape", "-halt-on-error", "-file-line-error", "-output-format=pdf", filename + '.tex' ]
 			proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
 
 			# Get output
@@ -2268,12 +2268,14 @@ def final_calc(questions, weight):
 			"\\usepackage{longtable}",
 			"\\usepackage{multirow}",
 			"\\usepackage{multicol}",
+			"\\usepackage{makecell}",
 			"\\usepackage{amsmath}",
 			"\\usepackage{amsfonts}",
 			"\\usepackage{graphicx}",
 			"\\usepackage{enumitem}",
 			"\\usepackage{tabulary}",
 			"\\usepackage{listings}",
+			"\\usepackage{minted}",
 			"\\usepackage{lastpage}",
 			"",
 				"% http://texdoc.net/texmf-dist/doc/latex/geometry/geometry.pdf",
