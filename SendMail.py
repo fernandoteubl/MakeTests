@@ -41,6 +41,8 @@ def main():
 		"attachment": "HEADER_ATTACHMENT"
 	},
 	"filter": """def filter(data):
+	if 'HEADER_SKIP' in data.row.keys() and data.row['HEADER_SKIP'] != '':
+		return False # Skip...
 	for header,cell in data.row.items():
 		if cell == '':
 			return False # Skip...
