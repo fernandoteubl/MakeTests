@@ -178,7 +178,7 @@ def main():
 
 		if not args.simulate:
 			smtp = smtplib.SMTP(config['SMTP_server'], int(config['SMTP_port']))
-			context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+			context = ssl._create_unverified_context() # ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 			context.set_ciphers('DEFAULT@SECLEVEL=1') # or context.set_ciphers('HIGH:!DH:!aNULL')
 			smtp.starttls(context=context)
 			if "SMTP_password" in config and config["SMTP_password"] != "":
