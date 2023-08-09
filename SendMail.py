@@ -168,6 +168,7 @@ def main():
 		FilterStruct = namedtuple("FilterStruct", "row message subject attachs recipients")
 
 		import smtplib
+		import ssl
 		from email.mime.application import MIMEApplication
 		from email.mime.multipart import MIMEMultipart
 		from email.utils import COMMASPACE, formatdate
@@ -175,7 +176,9 @@ def main():
 
 		if not args.simulate:
 			smtp = smtplib.SMTP(config['SMTP_server'], int(config['SMTP_port']))
-			smtp.starttls()
+			context=ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+			context.set_ciphers('DEFAULT@SECLEVEL=1') # or context.set_ciphers('HIGH:!DH:!aNULL')
+			smtp.starttls(context=context)
 			if "SMTP_password" in config and config["SMTP_password"] != "":
 				password = config["SMTP_password"]
 			else:
