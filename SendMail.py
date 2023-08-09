@@ -262,6 +262,12 @@ def main():
 		if not args.simulate:
 			smtp.close()
 
+
+	except UnicodeDecodeError as e:
+		import traceback
+		traceback.print_exc()
+		print('Try to save the JSON configuration file using UTF-8 with BOM.')
+
 	except Exception as e:
 		import traceback
 		traceback.print_exc()
