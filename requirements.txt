@@ -3,6 +3,7 @@ qrcode==7.4.2
 pyzbar==0.1.9
 python-barcode==0.15.1
 PyPDF2==3.0.1
+Pygments==2.15.1
 pytesseract==0.3.10
 chardet==5.1.0
 scipy==1.11.1
