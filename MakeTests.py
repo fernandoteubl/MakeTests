@@ -230,10 +230,9 @@ class Utils:
 		import PyPDF2 as pypdf
 		import numpy as np
 		from PIL import Image
-		pdf = pypdf.PdfFileReader(open(pdf_filename, "rb"))
-		for pg in range(pdf.getNumPages()):
-			page = pdf.getPage(pg)
-			objs = page['/Resources']['/XObject'].getObject()
+		pdf = pypdf.PdfReader(open(pdf_filename, "rb"))
+		for page in pdf.pages:
+			objs = page['/Resources']['/XObject'].get_object()
 			for obj in objs:
 				if objs[obj]['/Subtype'] == '/Image':
 					if objs[obj]['/Filter'] == '/DCTDecode':
