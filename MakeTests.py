@@ -331,7 +331,7 @@ class ImageUtils:
 				c2,r2 = markers[i2] 
 				p1, p2 = ImageUtils.findPointsPerpendicularToTheLine(c1, c2, r1)
 				p3, p4 = ImageUtils.findPointsPerpendicularToTheLine(c2, c1, r2)
-				box = np.int0([p1, p2, p3, p4])
+				box = np.array([p1, p2, p3, p4], dtype=np.int64)
 				warp = ImageUtils.warpImage(img, box)
 				for p,d,t in ImageUtils.barcodeDecoder(warp):
 					if verbose:
@@ -382,13 +382,13 @@ class ImageUtils:
 			# Get answer area
 			ansArea = ImageUtils.warpImage(img, (tl,tr,br,bl))
 			if verbose:
-				cv2.drawContours(img, [np.int0([tl,tr,br,bl])],0,(0,255,255), thickness=2)
+				cv2.drawContours(img, [np.array([tl,tr,br,bl], dtype=np.int64)],0,(0,255,255), thickness=2)
 
 			# Normalize the width of the Answer Area
 			h, w, _ = ansArea.shape
 			ansArea = cv2.resize(ansArea, (ImageUtils.IMAGE_WIDTH,int(ImageUtils.IMAGE_WIDTH*h/w)))
 
-			yield ansArea, code, [np.int0([tl,tr,br,bl])], markers_info
+			yield ansArea, code, [np.array([tl,tr,br,bl], dtype=np.int64)], markers_info
 
 	@staticmethod
 	def makeBarcode(data, typeBarcode='code128'):
