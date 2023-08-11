@@ -1,9 +1,17 @@
 #!/bin/bash
 
-PDF_FILE_INPUT="Provas.pdf"
-PDF_FILE_OUTPUT="Provas_img.pdf"
+if [ $# -ne 1 ]; then
+    echo "Usage:"
+    echo "  $(basename "$0") <PDF's file>"
+    exit
+fi
 
-cd "$(dirname "$0")"
+PDF_FILE_INPUT=$1
+filename=$(basename -- "$PDF_FILE_INPUT")
+extension="${filename##*.}"
+filename="${filename%.*}_img.${extension}"
+PDF_FILE_OUTPUT="$filename"
+
 mkdir temp
 cp ${PDF_FILE_INPUT} temp
 cd temp
@@ -12,12 +20,3 @@ convert output*.jpg ${PDF_FILE_OUTPUT}
 mv ${PDF_FILE_OUTPUT} ..
 cd ..
 rm -rf temp
-
-if [ "$(uname)" == "Darwin" ]; then
-	osascript -e 'tell application "Terminal" to close first window' & exit
-elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-    echo GNU/Linux platform
-    
-elif [ "$(expr substr $(uname -s) 1 10)" == "MINGW32_NT" ]; then
-    echo Windows NT platform
-fi
