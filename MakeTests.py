@@ -1863,7 +1863,7 @@ class Main:
 
 		if self.verbose >= 1: print("Timestamp: {}".format(timestamp))
 
-	def doCorrection(self, img):
+	def doCorrection(self, img, force_score_input=None):
 		# Resize for large image
 		img = ImageUtils.conditionalResize(img, max_res=ImageUtils.MAX_IMAGE_RES)
 
@@ -1938,7 +1938,11 @@ class Main:
 
 			# Get score for the current question
 			score, ansAreaPosProc, ansFeedback = question.doCorrection(ansArea.copy())
-			if score is None:
+			if force_score_input is not None:
+				score = force_score_input
+			elif score is None:
+				if self.verbose > 1:
+					print("Impossible to correct the current answer area of {} from {}.".format(question_num+1, student))
 				continue # Impossible to correct the current answer area, go to next answer area
 
 			if self.verbose > 1:
@@ -1948,7 +1952,7 @@ class Main:
 			updated_score, all_scores = self.correction.updateScore(student, question_num, score)
 
 			# Show correct answer in image
-			if self.verbose > 0:
+			if self.verbose > 0 and ansAreaPosProc is not None:
 				import numpy as np
 				h,w,_ = ansAreaPosProc.shape
 				quad_src = np.float32([[0,0],[w,0],[w,h],[0,h]])
@@ -2037,13 +2041,29 @@ class Main:
 		cap = cv2.VideoCapture(webcam_id)
 
 		# For each frame, try to make correction
+		input_score = ""
+		input_active = False
 		cv2.namedWindow("Press 'space' to close...", cv2.WINDOW_NORMAL)
 		while(cap.isOpened()):
 			_, i = cap.read()
-			i = self.doCorrection(i)
-			cv2.imshow("Press 'space' to close...", i)
-			if cv2.waitKey(1) & 0xFF == ord(' '):
+			k = cv2.waitKey(1)
+			if k == 27: # Esc
 				break
+			elif k == 13: # Enter
+				input_active = not input_active
+			elif k == 127: # Back
+				input_score = input_score[:-1]
+			elif k >= 0:
+				input_score += chr(k)
+
+			i = self.doCorrection(i, input_score if input_active else None)
+			rows, cols, _ = i.shape
+			if input_active:
+				ImageUtils.drawTextInsideTheBox(i[10:160,10:cols-10], "Set score manually to '{}'".format(input_score), (0,0,255), 3)
+				cv2.rectangle(i, pt1=(0,0), pt2=(cols,rows), color=(0,0,255), thickness=10)
+			elif input_score != '':
+				ImageUtils.drawTextInsideTheBox(i[0:80,0:cols], "'{}' (Press ENTER to force a score)".format(input_score), (255,0,0), 2)
+			cv2.imshow("Press 'ESC' to close...", i)
 
 		# Close camera and windows
 		cap.release()
