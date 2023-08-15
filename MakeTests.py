@@ -927,10 +927,6 @@ class QuestionMatrix(Question):
 			img_gray = np.vstack((img, img_gray))
 			cv2.imshow(__class__.__name__ + "." + sys._getframe(1).f_code.co_name, img_gray)
 
-		# If not possible to read all answers, abort!
-		if not all_successful:
-			return None, None, None
-
 		# Make answer matrix to check...
 		matrix = []
 		for ans_row in ans:
@@ -940,27 +936,39 @@ class QuestionMatrix(Question):
 			matrix.append(matrix_row)
 
 		# Calcuate the questions score
-		score = self.getScore(matrix)
+		if all_successful:
+			score = self.getScore(matrix)
+			# Draw wrongs and corrects answers to show feedback
+			def point_offset(pt, x, y):
+				return (pt[0] + x, pt[1] + y)
+			for ar in ans:
+				for a in ar:
+					if a['checked'] and a['answer_key']:
+						cv2.circle(img, a['center'], a['radius'], (0,255,0), -1)
+						cv2.line(img, point_offset(a['center'],-1*a['radius'],0), point_offset(a['center'],-1*a['radius']//3,a['radius']), (255,0,0), thickness=3)
+						cv2.line(img, point_offset(a['center'],-1*a['radius']//3,a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (255,0,0), thickness=3)
+					elif a['checked'] and not a['answer_key']:
+						cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
+						cv2.circle(img, a['center'], a['radius'], (0,0,255), 2)
+						cv2.line(img, point_offset(a['center'],a['radius'],a['radius']), point_offset(a['center'],-1*a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
+						cv2.line(img, point_offset(a['center'],-1*a['radius'],a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
+					elif not a['checked'] and a['answer_key']:
+						cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
+						ImageUtils.drawTextInsideTheBox(img[a['center'][1]-a['radius']:a['center'][1]+a['radius'],a['center'][0]-a['radius']:a['center'][0]+a['radius']], "?", (0,0,255))
+					else:
+						cv2.circle(img, a['center'], a['radius'], (255,0,0), 2)
+		else:
+			score = None
+			for u in range((1 if self.hlabel is None else 2), h_cells):
+				for v in range(0, v_cells-(1 if self.vlabel is None else 2)):
+					i = u - (1 if self.hlabel is None else 2); j = v
+					if answerKey[i][j]:
+						x = int(cell_w*v); y = int(cell_h*u); w = int(cell_w); h = int(cell_h)
+						cv2.line(img, (x, y), (x+w, y+h), (0,0,255), thickness=1)
+						cv2.line(img, (x+w, y), (x, y+h), (0,0,255), thickness=1)
 
-		# Draw wrongs and corrects answers to show feedback
-		def point_offset(pt, x, y):
-			return (pt[0] + x, pt[1] + y)
-		for ar in ans:
-			for a in ar:
-				if a['checked'] and a['answer_key']:
-					cv2.circle(img, a['center'], a['radius'], (0,255,0), -1)
-					cv2.line(img, point_offset(a['center'],-1*a['radius'],0), point_offset(a['center'],-1*a['radius']//3,a['radius']), (255,0,0), thickness=3)
-					cv2.line(img, point_offset(a['center'],-1*a['radius']//3,a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (255,0,0), thickness=3)
-				elif a['checked'] and not a['answer_key']:
-					cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
-					cv2.circle(img, a['center'], a['radius'], (0,0,255), 2)
-					cv2.line(img, point_offset(a['center'],a['radius'],a['radius']), point_offset(a['center'],-1*a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
-					cv2.line(img, point_offset(a['center'],-1*a['radius'],a['radius']), point_offset(a['center'],a['radius'],-1*a['radius']), (0,0,255), thickness=2*a['radius']//3)
-				elif not a['checked'] and a['answer_key']:
-					cv2.circle(img, a['center'], a['radius'], (255,0,0), -1)
-					ImageUtils.drawTextInsideTheBox(img[a['center'][1]-a['radius']:a['center'][1]+a['radius'],a['center'][0]-a['radius']:a['center'][0]+a['radius']], "?", (0,0,255))
-				else:
-					cv2.circle(img, a['center'], a['radius'], (255,0,0), 2)
+
+
 
 		# Draw grid lines
 		for i in range(h_cells):
@@ -1943,7 +1951,6 @@ class Main:
 			elif score is None:
 				if self.verbose > 1:
 					print("Impossible to correct the current answer area of {} from {}.".format(question_num+1, student))
-				continue # Impossible to correct the current answer area, go to next answer area
 
 			if self.verbose > 1:
 				print("Test of {}, question {}: {}".format(str(student)[13:-2], question_num+1, score))
@@ -1988,8 +1995,10 @@ class Main:
 				ImageUtils.overlayWarpImage(img, topBar, topQuad, np.float32([[0,th],[tw,th],[tw,0],[0,0]]))
 				ImageUtils.overlayWarpImage(img, botBar, botQuad, np.float32([[0,bh],[bw,bh],[bw,0],[0,0]]))
 
-			# Show feedback on current image: blue if nothing to update and green if some score was updated
-			if len(updated_score)>0:
+			# Show feedback on current image: blue if nothing to update; green if some score was updated and yellow if no score was calculated
+			if score is None:
+				cv2.drawContours(img, contours,0,(0,255,255), thickness=4)
+			elif len(updated_score)>0:
 				cv2.drawContours(img, contours,0,(0,255,0), thickness=4)
 			else:
 				cv2.drawContours(img, contours,0,(255,0,0), thickness=4)
