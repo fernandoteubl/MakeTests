@@ -1863,7 +1863,7 @@ class Main:
 			if self.verbose > 0:
 				print("PDF '{}' generated.".format(self.config['output']['answer_key']))
 		except CalledProcessError as e:
-			if self.verbose > 1: raise Exception(ansserKey.getError())
+			if self.verbose > 1: raise Exception(answerKey.getError())
 			else:                raise Exception("Error to generate {}". format(self.config['output']['answer_key']))
 		except UnicodeDecodeError as e:
 			if self.verbose > 1: raise Exception(e.args)
