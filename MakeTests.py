@@ -1252,11 +1252,10 @@ class QuestionQA(QuestionMatrix):
 
 	@staticmethod
 	def auxCode(question, language):
-		return '''\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\ \ }}{{{{\ }}}}1]
+		return '''\\vspace{{-\\baselineskip}}\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\ \ }}{{{{\ }}}}1]
 {code}
 \\end{{lstlisting}}
 '''.format(code='\n'.join([s for s in question.splitlines() if s]), language=language)
-# '''.format(code="^^J\n".join(question.split('\n')), language=language)
 
 	def makeSetup(self):
 		raise Exception("Method not implemented.")
