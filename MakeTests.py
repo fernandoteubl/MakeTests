@@ -1232,6 +1232,12 @@ class QuestionQA(QuestionMatrix):
 	list_question_answer_index       = None
 	question_description             = None
 	correction_criteria_cescription  = None
+	table_config					 = {
+		"question_size": 3,
+		"answer_size": 4,
+		"continue": "",
+		"end": ""
+	}
 
 	@staticmethod
 	def auxShuffle(questions, num_questions):
@@ -1243,6 +1249,14 @@ class QuestionQA(QuestionMatrix):
 		ans = deepcopy(quest)
 		random.shuffle(ans)
 		return [(quest[i], ans[i]) for i in range(0,num_questions)]
+
+	@staticmethod
+	def auxCode(question, language):
+		return '''\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\ \ }}{{{{\ }}}}1]
+{code}
+\\end{{lstlisting}}
+'''.format(code='\n'.join([s for s in question.splitlines() if s]), language=language)
+# '''.format(code="^^J\n".join(question.split('\n')), language=language)
 
 	def makeSetup(self):
 		raise Exception("Method not implemented.")
@@ -1262,14 +1276,26 @@ class QuestionQA(QuestionMatrix):
 
 	def getQuestionTex(self, desc):
 		tex = self.question_description + "\n"
-		tex += "\n\\begin{tabularx}{\\textwidth}{|c|c||c|X|}\n\\hline\n"
-		tex += "\\multicolumn{{2}}{{|c||}}{{\\textbf{{{q}}}}} & \\multicolumn{{2}}{{c|}}{{\\textbf{{{a}}}}} \\\\\n".format(q=self.labels['questions'], a=self.labels['answers'])
+
+		tab_size, q_size, a_size, tot_size = 40, self.table_config['question_size'], self.table_config['answer_size'], self.table_config['question_size'] + self.table_config['answer_size']
+		tex += "\\begin{{longtable}}{{ |>{{\\centering\\bfseries}}c|p{{{q}em}}|>{{\\centering\\bfseries}}c|>{{\\arraybackslash}}p{{{a}em}}| }}".format(q=int(tab_size*q_size/tot_size), a=int(tab_size*a_size/tot_size))
+		tex += "\\hline\n"
+		tex += "\\multicolumn{{2}}{{|c|}}{{\\textbf{{{q}}}}} & \\multicolumn{{2}}{{c|}}{{\\textbf{{{a}}}}} \\\\\n".format(q=self.labels['questions'], a=self.labels['answers'])
+		tex += "\\endfirsthead \\hline"
+		tex += "\\multicolumn{{2}}{{|c|}}{{\\textbf{{{q}}}}} & \\multicolumn{{2}}{{c|}}{{\\textbf{{{a}}}}} \\\\\n".format(q=self.labels['questions'], a=self.labels['answers'])
+		tex += "\\endhead \\hline\n"
+		if self.table_config['continue'] != "":
+			tex += "\\multicolumn{{4}}{{|r|}}{{\\emph{{{s}}}}} \\\\\n\\hline\n".format(s=self.table_config['continue'])
+		tex += "\\endfoot\n"
+		if self.table_config['end'] != "":
+			tex += "\\multicolumn{{4}}{{|r|}}{{\\emph{{{s}}}}} \\\\\n\\hline\n".format(s=self.table_config['end'])
+		tex += "\\endlastfoot\n"
 
 		for q in range(0,len(self.list_question_answer_index)):
 			tex += "\\hline\n\\textbf{{{n1}}} & {p} & \\textbf{{{n2}}} & {r} \\\\\n".format( p=self.full_list_question_answer_text[self.list_question_answer_index[q][0]][0],
             r=self.full_list_question_answer_text[self.list_question_answer_index[q][1]][1],
-            n1=str(q+1), n2=chr(ord('A') + q)+":")
-		tex += "\\hline\n\end{tabularx}\n"
+            n1=str(q+1), n2=chr(ord('A') + q))
+		tex += "\\hline\n\end{longtable}\n"
 
 		tex += self.correction_criteria_description
 
@@ -2605,28 +2631,82 @@ from MakeTests import QuestionQA
 class MyQuestionQAnswer(QuestionQA):
 	def makeSetup(self):
 		self.full_list_question_answer_text = [
-			[''' Triangle ''', '''Three sides '''],
-			[''' Quadrilateral ''', '''Four sides '''],
-			[''' Pentagon ''', '''Five sides '''],
-			[''' Hexagon ''', '''Six sides '''],
-			[''' Heptagon ''', '''Seven sides '''],
-			[''' Octagon ''', '''Eight sides '''],
-			[''' Enneagon ''', '''Nine sides '''],
-			[''' Decagon ''', '''Ten sides '''],
-			[''' Hendecagon ''', '''Eleven sides '''],
-			[''' Dodecagon ''', '''Twelve sides '''],
-			[''' Tridecagon ''', '''Thirteen sides '''],
-			[''' Tetradecagon ''', '''Fourteen sides '''],
-			[''' Pentadecagon ''', '''Fifteen sides '''],
-			[''' Hexadecagon ''', '''Sixteen sides '''],
-			[''' Heptadecagon ''', '''Seventeen sides '''],
-			[''' Octadecagon ''', '''Eighteen sides '''],
-			[''' Enneadecagon ''', '''Nineteen sides '''],
-			[''' Icosagon ''', '''Twenty sides '''],
+			# ['''Triangle''', '''Three sides'''],
+			['''Quadrilateral''', '''Four sides'''],
+			['''Pentagon''', '''Five sides'''],
+			['''Hexagon''', '''Six sides'''],
+			['''Heptagon''', '''Seven sides'''],
+			['''Octagon''', '''Eight sides'''],
+			['''Enneagon''', '''Nine sides'''],
+			['''Decagon''', '''Ten sides'''],
+			['''Hendecagon''', '''Eleven sides'''],
+			['''Dodecagon''', '''Twelve sides'''],
+			['''Tridecagon''', '''Thirteen sides'''],
+			['''Tetradecagon''', '''Fourteen sides'''],
+			['''Pentadecagon''', '''Fifteen sides'''],
+			['''Hexadecagon''', '''Sixteen sides'''],
+			['''Heptadecagon''', '''Seventeen sides'''],
+			['''Octadecagon''', '''Eighteen sides'''],
+			['''Enneadecagon''', '''Nineteen sides'''],
+			['''Icosagon ''', '''Twenty sides'''],
+			['''Select Sort''', QuestionQA.auxCode('''
+def selection_sort(input_list: List[T]) -> List[T]:
+    length = len(input_list)
+    for element_index in range(length - 1):
+        min_index = element_index
+        for finder_index in range(element_index + 1, length):
+            if input_list[min_index] > input_list[finder_index]:
+                min_index = finder_index
+        if element_index is not min_index:
+            input_list[element_index], input_list[min_index] = \\
+				input_list[min_index], input_list[element_index]
+    return input_list
+''', 'Python')],
+			['''Insertion Sort''', QuestionQA.auxCode('''
+def insertion_sort(input_list: List[T]) -> List[T]:
+    length = len(input_list)
+    for i in range(1, length):
+        element_for_insertion = input_list[i]
+        j = i - 1
+        while j >= 0 and input_list[j] > element_for_insertion:
+            input_list[j + 1] = input_list[j]
+            j -= 1
+        input_list[j + 1] = element_for_insertion
+    return input_list
+''', 'Python')],
+			['''Buuble Sort''', QuestionQA.auxCode('''
+def bubble_sort(input_list: List[T]) -> List[T]:
+    length = len(input_list)
+    for i in range(length - 1):
+        for j in range(length - i - 1):
+            if input_list[j] > input_list[j + 1]:
+                aux = input_list[i]
+				input_list[i] = input_list[j]
+				input_list[j] = aux
+    return input_list
+''', 'Python')],
+			['''Shell Sort''', QuestionQA.auxCode('''
+def shell_sort(input_list: List[T], sublist_increment: int) -> List[T]:
+    if sublist_increment // 2 == 0:
+        print("Please select an odd number for sublist incrementation. ")
+        return
+    length = len(input_list)
+    while sublist_increment >= 1:
+        for i in range(sublist_increment, length):
+            element_for_insertion = input_list[i]
+            j = i - sublist_increment
+            while j >= 0 and input_list[j] > element_for_insertion:
+                input_list[j + sublist_increment] = input_list[j]
+                j -= sublist_increment
+            input_list[j + sublist_increment] = element_for_insertion
+        sublist_increment -= 2
+    return input_list
+''', 'Python')],
 		]
-		self.list_question_answer_index = QuestionQA.auxShuffle(self.full_list_question_answer_text, 8)
+		self.list_question_answer_index = QuestionQA.auxShuffle(self.full_list_question_answer_text, 18)
 		self.question_description = "Associate the Questions with the Answers."
 		self.labels     = {"questions": "Questions", "answers": "Answers"}
+		self.table_config = {"question_size": 1, "answer_size": 3, "continue": "Continue...", "end": "End!"}
 		self.correction_criteria_description =  '''
 \\textbf{IMPORTANT:} Each question can only be associated with one answer and vice versa. A correct association will be disregarded if there is another association of the same question or answer.
 
