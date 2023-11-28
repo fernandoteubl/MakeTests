@@ -1252,7 +1252,7 @@ class QuestionQA(QuestionMatrix):
 
 	@staticmethod
 	def auxCode(question, language):
-		return '''\\vspace{{-\\baselineskip}}\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\ \ }}{{{{\ }}}}1]
+		return '''\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\ \ }}{{{{\ }}}}1,aboveskip=-.8\\baselineskip,belowskip=-.8\\baselineskip]
 {code}
 \\end{{lstlisting}}
 '''.format(code='\n'.join([s for s in question.splitlines() if s]), language=language)
@@ -1292,8 +1292,8 @@ class QuestionQA(QuestionMatrix):
 
 		for q in range(0,len(self.list_question_answer_index)):
 			tex += "\\hline\n\\textbf{{{n1}}} & {p} & \\textbf{{{n2}}} & {r} \\\\\n".format( p=self.full_list_question_answer_text[self.list_question_answer_index[q][0]][0],
-            r=self.full_list_question_answer_text[self.list_question_answer_index[q][1]][1],
-            n1=str(q+1), n2=chr(ord('A') + q))
+				r=self.full_list_question_answer_text[self.list_question_answer_index[q][1]][1],
+				n1=str(q+1), n2=chr(ord('A') + q))
 		tex += "\\hline\n\end{longtable}\n"
 
 		tex += self.correction_criteria_description
