@@ -1233,8 +1233,8 @@ class QuestionQA(QuestionMatrix):
 	question_description             = None
 	correction_criteria_cescription  = None
 	table_config					 = {
-		"question_size": 3,
-		"answer_size": 4,
+		"question_col_width": 3,
+		"answer_col_width": 4,
 		"continue": "",
 		"end": ""
 	}
@@ -1276,7 +1276,7 @@ class QuestionQA(QuestionMatrix):
 	def getQuestionTex(self, desc):
 		tex = self.question_description + "\n"
 
-		tab_size, q_size, a_size, tot_size = 40, self.table_config['question_size'], self.table_config['answer_size'], self.table_config['question_size'] + self.table_config['answer_size']
+		tab_size, q_size, a_size, tot_size = 40, self.table_config['question_col_width'], self.table_config['answer_col_width'], self.table_config['question_col_width'] + self.table_config['answer_col_width']
 		tex += "\\begin{{longtable}}{{ |>{{\\centering\\bfseries}}c|p{{{q}em}}|>{{\\centering\\bfseries}}c|>{{\\arraybackslash}}p{{{a}em}}| }}".format(q=int(tab_size*q_size/tot_size), a=int(tab_size*a_size/tot_size))
 		tex += "\\hline\n"
 		tex += "\\multicolumn{{2}}{{|c|}}{{\\textbf{{{q}}}}} & \\multicolumn{{2}}{{c|}}{{\\textbf{{{a}}}}} \\\\\n".format(q=self.labels['questions'], a=self.labels['answers'])
@@ -2705,7 +2705,7 @@ def shell_sort(input_list: List[T], sublist_increment: int) -> List[T]:
 		self.list_question_answer_index = QuestionQA.auxShuffle(self.full_list_question_answer_text, 18)
 		self.question_description = "Associate the Questions with the Answers."
 		self.labels     = {"questions": "Questions", "answers": "Answers"}
-		self.table_config = {"question_size": 1, "answer_size": 3, "continue": "Continue...", "end": "End!"}
+		self.table_config = {"question_col_width": 1, "answer_col_width": 3, "continue": "Continue...", "end": "End!"}
 		self.correction_criteria_description =  '''
 \\textbf{IMPORTANT:} Each question can only be associated with one answer and vice versa. A correct association will be disregarded if there is another association of the same question or answer.
 
