@@ -259,10 +259,13 @@ class Utils:
 		return chardet.detect(raw)['encoding']
 
 	@staticmethod
-	def getTimestamp():
+	def getTimestamp(number_only = False):
 		import time
 		t = time.localtime(time.time())
-		return "{Y:04d}-{M:02d}-{D:02d}T{h:02d}:{m:02d}:{s:02d}".format(Y=t.tm_year,M=t.tm_mon,D=t.tm_mday,h=t.tm_hour,m=t.tm_min,s=t.tm_sec,Z=t.tm_zone)
+		if number_only == True:
+			return "{Y:04d}{M:02d}{D:02d}{h:02d}{m:02d}{s:02d}".format(Y=t.tm_year,M=t.tm_mon,D=t.tm_mday,h=t.tm_hour,m=t.tm_min,s=t.tm_sec,Z=t.tm_zone)
+		else:
+			return "{Y:04d}-{M:02d}-{D:02d}T{h:02d}:{m:02d}:{s:02d}".format(Y=t.tm_year,M=t.tm_mon,D=t.tm_mday,h=t.tm_hour,m=t.tm_min,s=t.tm_sec,Z=t.tm_zone)
 # END UTILS #
 #############
 
@@ -610,13 +613,16 @@ class LaTeX:
 	img_counter = 0
 
 	def __init__(self, sufix_temp_dir="", temporary_directory=None):
-		import os, tempfile, collections
-		
+		import os, collections
+
 		if temporary_directory is None:
+			import tempfile
 			self.tempfile_TemporaryDirectory = tempfile.TemporaryDirectory(prefix=os.path.splitext(os.path.basename(__file__))[0], suffix=sufix_temp_dir)
 			self.temp_dir = self.tempfile_TemporaryDirectory.name
 		else:
-			self.temp_dir = tempfile.mkdtemp(prefix=os.path.splitext(os.path.basename(__file__))[0], suffix=sufix_temp_dir, dir=os.path.join(os.path.dirname(os.path.realpath('__file__')), temporary_directory))
+			self.temp_dir = os.path.join(os.path.dirname(os.path.realpath('__file__')), temporary_directory)
+			self.temp_dir = os.path.join(self.temp_dir, Utils.getTimestamp(number_only=True) + '_' + sufix_temp_dir)
+			os.makedirs(self.temp_dir)
 
 		self.replaces = collections.OrderedDict()
 		self.includes = []
