@@ -623,8 +623,11 @@ class LaTeX:
 			tmp_dir = os.path.join(os.path.dirname(os.path.realpath('__file__')), temporary_directory)
 			self.temp_dir = os.path.join(tmp_dir, sufix_temp_dir)
 			if os.path.exists( self.temp_dir ):
-				os.rename(self.temp_dir, os.path.join(tmp_dir, Utils.getTimestamp(number_only=True) + '_' + sufix_temp_dir))
-			os.makedirs(self.temp_dir)
+				backup_dir = os.path.join(tmp_dir, "_old")
+				if not os.path.exists( backup_dir ):
+					os.makedirs( backup_dir )
+				os.rename( self.temp_dir, os.path.join(backup_dir, sufix_temp_dir + '_' + Utils.getTimestamp(number_only=True)) )
+			os.makedirs( self.temp_dir )
 
 		self.replaces = collections.OrderedDict()
 		self.includes = []
