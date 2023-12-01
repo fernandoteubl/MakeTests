@@ -620,8 +620,10 @@ class LaTeX:
 			self.tempfile_TemporaryDirectory = tempfile.TemporaryDirectory(prefix=os.path.splitext(os.path.basename(__file__))[0], suffix=sufix_temp_dir)
 			self.temp_dir = self.tempfile_TemporaryDirectory.name
 		else:
-			self.temp_dir = os.path.join(os.path.dirname(os.path.realpath('__file__')), temporary_directory)
-			self.temp_dir = os.path.join(self.temp_dir, Utils.getTimestamp(number_only=True) + '_' + sufix_temp_dir)
+			tmp_dir = os.path.join(os.path.dirname(os.path.realpath('__file__')), temporary_directory)
+			self.temp_dir = os.path.join(tmp_dir, sufix_temp_dir)
+			if os.path.exists( self.temp_dir ):
+				os.rename(self.temp_dir, os.path.join(tmp_dir, Utils.getTimestamp(number_only=True) + '_' + sufix_temp_dir))
 			os.makedirs(self.temp_dir)
 
 		self.replaces = collections.OrderedDict()
