@@ -337,9 +337,10 @@ class ImageUtils:
 				box = np.array([p1, p2, p3, p4], dtype=np.int64)
 				warp = ImageUtils.warpImage(img, box)
 				for p,d,t in ImageUtils.barcodeDecoder(warp):
-					if verbose:
-						cv2.drawContours(img,[box],0,(0,0,255),2)
-					bars.append([i1, i2, d])
+					if len(d) > 6: # Todo: check if it is a valid code!
+						if verbose:
+							cv2.drawContours(img,[box],0,(0,0,255),2)
+						bars.append([i1, i2, d])
 
 		# Find all sections (headers and footers bars of a same answer area)
 		sections = []
