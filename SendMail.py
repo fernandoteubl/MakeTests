@@ -5,7 +5,7 @@ def main():
 	try:
 		import argparse
 		parser = argparse.ArgumentParser()
-		parser.add_argument("config_file", default="mail.json", type=str, nargs='?', help="Configure file input (JSON format).")
+		parser.add_argument("config_file", default="mail.json", type=str, nargs='?', help="JSON configuration file (default: mail.json).")
 		parser.add_argument("-e", "--example", action="store_true", help="Print a JSON config example.")
 		parser.add_argument("-s", "--simulate", action="store_true", help="Just simulate. No email will be sent.")
 		args = parser.parse_args()
