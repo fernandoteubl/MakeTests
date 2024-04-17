@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
+@dataclass
+class Data:
+	row: list
+	recipients: list
+	attachs: list
+	subject: str
+	message: str
+
 def main():
 	try:
 		import argparse
@@ -166,8 +175,6 @@ def main():
 		def filter(data):
 			exec(code_str)
 			return eval('filter(data)')
-		from collections import namedtuple
-		FilterStruct = namedtuple("FilterStruct", "row message subject attachs recipients")
 
 		import smtplib
 		import ssl
@@ -205,13 +212,6 @@ def main():
 			if config['columns']['attachment'] in r:
 				attach = os.path.join(dir_input, r[config['columns']['attachment']])
 
-			for k,v in r.items():
-				message = message.replace(k, v)
-				subject = subject.replace(k, v)
-
-			msg['Subject'] = subject
-			msg.attach(MIMEText(message))
-
 			attachs = []
 			if attach is not None:
 				def attach_file(f):
@@ -234,18 +234,25 @@ def main():
 				else:
 					attach_file(path_attach)
 
-			data = FilterStruct(row=r, message=message, subject=subject, attachs=attachs, recipients=recipients)
+			data = Data(row=r, message=message, subject=subject, attachs=attachs, recipients=recipients)
 			if filter(data) == False:
-				print("Skipping message to {}".format(recipients))
+				print("Skipping message to {}".format(data.recipients))
 				continue
 
+			for k,v in r.items():
+				data.message = data.message.replace(k, v)
+				data.subject = data.subject.replace(k, v)
+
+			msg['Subject'] = data.subject
+			msg.attach(MIMEText(data.message))
+
 			print("======")
-			print("\tTo:        {}".format(recipients))
-			print("\tSubject:   \"{}\"".format(subject))
-			print("\tAttachments: {}".format("{} files{}".format(len(attachs), " (" if len(attachs) > 0 else  "." )), end= "")
-			for a in range(len(attachs)): print("{}{}".format(attachs[a], ", " if a<len(attachs)-1 else ")."), end="")
+			print("\tTo:        {}".format(data.recipients))
+			print("\tSubject:   \"{}\"".format(data.subject))
+			print("\tAttachments: {}".format("{} files{}".format(len(data.attachs), " (" if len(data.attachs) > 0 else  "." )), end= "")
+			for a in range(len(data.attachs)): print("{}{}".format(data.attachs[a], ", " if a<len(data.attachs)-1 else ")."), end="")
 			print("")
-			print("\tMessage:\n\t\t{}".format("\n\t\t".join(message.split("\n"))))
+			print("\tMessage:\n\t\t{}".format("\n\t\t".join(data.message.split("\n"))))
 			print("======")
 
 			send_mail = yes
@@ -262,7 +269,7 @@ def main():
 			if send_mail:
 				print("Sending...", end="")
 				if not args.simulate:
-					smtp.sendmail(msg['From'], recipients, msg.as_string())
+					smtp.sendmail(msg['From'], data.recipients, msg.as_string())
 				print(" Successful.")
 		if not args.simulate:
 			smtp.close()
