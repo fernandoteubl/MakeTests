@@ -1675,7 +1675,7 @@ class Main:
 		self.questionsDB = QuestionsDB(self.config['questions']['db_path'], salt=self.config['questions']['salt'])
 		self.selected    = [c['path'] for c in self.config['questions']['select']]
 
-	def makeDirectoryForAStrudent(self, student):
+	def makeDirectoryForAStudent(self, student):
 		import os
 
 		# Make path to correction directory
@@ -1919,7 +1919,7 @@ class Main:
 		qrcode_students = []
 		for s, p, c in self.findStudentFromAllQRCode(img):
 			# Save the current page image into student correction directory
-			full_path, full_path_student = self.makeDirectoryForAStrudent(s)
+			full_path, full_path_student = self.makeDirectoryForAStudent(s)
 			if self.verbose > 0:
 				print("Save page {} into directory of student ".format(p), end="")
 				for k,v in s.items():
@@ -2049,7 +2049,7 @@ class Main:
 					print("updated {} to {}".format(k, v))
 
 				# Make path to corrction and student
-				full_path, full_path_student = self.makeDirectoryForAStrudent(student)
+				full_path, full_path_student = self.makeDirectoryForAStudent(student)
 				
 				# Save updated information less final score
 				if k != self.config['correction']['headers']['final']:
