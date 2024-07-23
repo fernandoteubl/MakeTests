@@ -2435,8 +2435,8 @@ def final_calc(questions, weight):
 				"\\begin{tabular}{|c c|}",
 				"\\hline",
 				"\\multicolumn{2}{|c|}{ {\\LARGE\\textbf{%ANSWER_KEY_LABEL%}} } \\\\",
-				"{\\large\\textbf{%COURSE%}} & {\\large\\textbf{%TEST_NAME%}} \\\\",
-				"{\\large\\textbf{%CLASS%}} & {\\large\\textbf{%DATE%}} \\\\",
+				"\\multicolumn{2}{|c|}{ {\\LARGE\\textbf{%COURSE%}} } \\\\",
+				"{\\Large\\textbf{%TEST_NAME%}} & {\\large\\textbf{%DATE%}} \\\\",
 				"\\hline",
 				"\\end{tabular}",
 				"\\end{center}",
@@ -2446,7 +2446,7 @@ def final_calc(questions, weight):
 			"before": [
 				"\\begin{tabulary}{\\textwidth}{|p{0cm}*{%TOTAL%}{|L}|}",
 				"\\hline",
-				"\\multirow{2}{*}{} & \\multicolumn{%TOTAL%}{|c|}{\\textbf{%NAME% (%ID%)}} \\\\",
+				"\\multirow{2}{*}{} & \\multicolumn{%TOTAL%}{|c|}{\\textbf{%NAME% (%ID%) [%CLASS%]}} \\\\",
 				"\\hline"
 			],
 			"answer": [
