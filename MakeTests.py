@@ -1082,7 +1082,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 	def getQuestionTex(self, desc):
 		tex = self.questionDescription
 
-		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex, label=\\textbf{\\arabic*.}]\n"
+		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex,label=\\textbf{\\arabic*.}]\n"
 		for q in self.questions:
 			tex += "\\item {quest}\n\n".format(quest=q[0])
 		tex += "\\end{enumerate}"
