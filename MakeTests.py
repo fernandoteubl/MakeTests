@@ -1744,6 +1744,9 @@ class Main:
 					yield qrcode_valid_student, qrcode_page, countour
 
 	def makeTests(self):
+		from collections import OrderedDict
+		header_replaces = self.config["input"]["header_replaces"]
+
 		timestamp = Utils.getTimestamp()
 		answer_area_at_the_beginning = False if self.config['tex']['answer_area_at_the_beginning'] == 0 else True
 
@@ -1795,8 +1798,12 @@ class Main:
 			if self.verbose > 2: print("\t\tLoaded {} questions:".format(len(questions)))
 
 			# Update student info in LaTeX macro
-			tex.addReplaces(student)
-			answerKey.addReplaces(student)
+			s = OrderedDict()
+			for k,v in header_replaces.items():
+				if k in student:
+					s[v] = student[k]
+			tex.addReplaces(s)
+			answerKey.addReplaces(s)
 
 			# Make QRCode (one by page) and save it in latex temporary folder
 			for pg in range(1,self.config['tex']['max_pages']+1):
@@ -2243,7 +2250,8 @@ examples = {'config': r'''
 	"input": {
 		"filename" : "Students.csv",
 		"delimiter": ";",
-		"quotechar": "\""
+		"quotechar": "\"",
+		"header_replaces": {"ID": "%ID%", "Fullname": "%NAME%", "Email":"%EMAIL%", "Class":"%CLASS%"}
 	},
 	"output": {
 		"tests":    "Tests.pdf",
@@ -2255,12 +2263,12 @@ examples = {'config': r'''
 		"delimiter": ";",
 		"quotechar": "\"",
 		"headers": {
-			"identification": {"%ID%": "ID", "%NAME%": "Fullname",  "%EMAIL%": "EMail"},
+			"identification": {"ID": "ID", "Fullname": "Fullname",  "Email": "Email"},
 			"counter": "%COUNT%",
 			"intermediate": "Question_%COUNT%",
 			"final": "Final_Score"
 		},
-		"student_directory_id": "%NAME%",
+		"student_directory_id": "Fullname",
 		"final_calc": """
 def final_calc(questions, weight):
   pts = sum([float(weight[i]) * float(questions[i]) for i in range(len(questions))]) / sum(weight)
@@ -2463,6 +2471,11 @@ def final_calc(questions, weight):
 		}
 	}
 }
+'''
+, 'csv': r'''ID;Fullname;Email;Class
+123456;"Abc Def Ghi";abc@def.ghi;A
+789012;"Jkl Mno Pqr";jkl@mno.pqr;B
+345678;"Stu Vwx Yz";stu@vwx.yz;C
 '''
 , 'essay': r"""
 from MakeTests import QuestionEssay
