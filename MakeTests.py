@@ -642,7 +642,7 @@ class LaTeX:
 				raise Exception("LaTeX.addReplaces dict must be a str:str!")
 			for kk, vv in self.replaces.items(): # Replace from previous replaces
 				v = v.replace(kk, vv)
-			self.replaces[k] = v.replace("_","\_")
+			self.replaces[k] = v.replace("_", r"\_")
 
 	def addInclude(self, inc):
 		import os
@@ -1172,7 +1172,7 @@ class QuestionMultipleChoice(QuestionMatrix):
 			tex += "\\end{enumerate}"
 			if "itemsPerRow" in q and q["itemsPerRow"] > 1:
 				tex += "\\end{multicols}"
-		tex += "\end{enumerate}"
+		tex += r"\end{enumerate}"
 
 		tex += self.correctionCriteriaDescription
 
@@ -1264,7 +1264,7 @@ class QuestionQA(QuestionMatrix):
 
 	@staticmethod
 	def auxCode(question, language):
-		return '''\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\ \ }}{{{{\ }}}}1,aboveskip=-.8\\baselineskip,belowskip=-.8\\baselineskip]
+		return '''\\begin{{lstlisting}}[language={language},basicstyle=\\scriptsize,breaklines=true,showspaces=false,showstringspaces=false,tabsize=2,literate={{\\ \\ }}{{{{\\ }}}}1,aboveskip=-.8\\baselineskip,belowskip=-.8\\baselineskip]
 {code}
 \\end{{lstlisting}}
 '''.format(code='\n'.join([s for s in question.splitlines() if s]), language=language)
@@ -1306,7 +1306,7 @@ class QuestionQA(QuestionMatrix):
 			tex += "\\hline\n\\textbf{{{n1}}} & {p} & \\textbf{{{n2}}} & {r} \\\\\n".format( p=self.full_list_question_answer_text[self.list_question_answer_index[q][0]][0],
 				r=self.full_list_question_answer_text[self.list_question_answer_index[q][1]][1],
 				n1=str(q+1), n2=chr(ord('A') + q))
-		tex += "\\hline\n\end{longtable}\n"
+		tex += "\\hline\n\\end{longtable}\n"
 
 		tex += self.correction_criteria_description
 
