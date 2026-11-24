@@ -1039,6 +1039,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 	questionDescription           = None
 	correctionCriteriaDescription = None
 	labels                        = None
+	doubleCol                     = False
 
 	def makeSetup(self):
 		raise Exception("Method not implemented.")
@@ -1082,10 +1083,16 @@ class QuestionTrueOrFalse(QuestionMatrix):
 	def getQuestionTex(self, desc):
 		tex = self.questionDescription
 
+		if self.doubleCol:
+			tex += "\\begin{multicols}{2}\n"
+
 		tex += "\\begin{enumerate}[topsep=0pt,itemsep=-1ex,partopsep=1ex,parsep=1ex,label=\\textbf{\\arabic*.}]\n"
 		for q in self.questions:
 			tex += "\\item {quest}\n\n".format(quest=q[0])
 		tex += "\\end{enumerate}"
+
+		if self.doubleCol:
+			tex += "\\end{multicols}\n"
 
 		tex += self.correctionCriteriaDescription
 
@@ -2606,6 +2613,7 @@ class MyQuestionMultipleChoice(QuestionMultipleChoice):
 from MakeTests import QuestionTrueOrFalse
 class MyQuestionTrueFalse(QuestionTrueOrFalse):
 	def makeSetup(self):
+		self.doubleCol = True # Use two columns for the questions
 		import random
 		grp1 = [
 			["True  AND True",  True],
