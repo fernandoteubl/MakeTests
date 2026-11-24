@@ -64,7 +64,7 @@ def main():
 
 		import chardet
 		with open(args.config_file, 'rb') as file:
-			row = file.read(32)
+			row = file.read()
 			encode = chardet.detect(row)['encoding']
 			file.close()
 
@@ -155,7 +155,7 @@ def main():
 			f.close()
 
 		with open(config['input'], 'rb') as file:
-			raw = file.read(32)
+			raw = file.read()
 			encode = chardet.detect(raw)['encoding']
 			file.close()
 
@@ -173,8 +173,9 @@ def main():
 		code_str = ""
 		for f in config['filter']: code_str += f + "\n"
 		def filter(data):
-			exec(code_str)
-			return eval('filter(data)')
+			namespace = {}
+			exec(code_str, namespace)
+			return namespace['filter'](data)
 
 		import smtplib
 		import ssl
