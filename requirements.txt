@@ -2,7 +2,7 @@ opencv-python==4.14.0.94
 qrcode==8.2
 pyzbar==0.1.9
 python-barcode==0.16.1
-PyPDF2==3.0.1
+pypdf==7.1.1
 Pygments==2.21.0
 pytesseract==0.3.13
 chardet==7.7.0

@@ -41,7 +41,7 @@ elif _platform == "win32":
 	sys.exit("Windows has not yet been tested.")
 
 try:
-	import cv2, qrcode, pyzbar, barcode, PyPDF2, chardet, scipy, pytesseract
+	import cv2, qrcode, pyzbar, barcode, pypdf, chardet, scipy, pytesseract
 except ImportError as error:
 	print(error.msg)
 	sys.exit(f"Please, install '{error.name}' library...")
@@ -227,35 +227,16 @@ class Utils:
 
 	@staticmethod
 	def getImagesFromPDF(pdf_filename):
-		import PyPDF2 as pypdf
-		import numpy as np
-		from PIL import Image
-		pdf = pypdf.PdfReader(open(pdf_filename, "rb"))
+		pdf = pypdf.PdfReader(pdf_filename)
 		for page in pdf.pages:
-			objs = page['/Resources']['/XObject'].get_object()
-			for obj in objs:
-				if objs[obj]['/Subtype'] == '/Image':
-					if objs[obj]['/Filter'] == '/DCTDecode':
-						yield cv2.imdecode(np.frombuffer(objs[obj]._data, np.uint8), cv2.IMREAD_COLOR) # IMREAD_GRAYSCALE
-					elif objs[obj]['/Filter'] == '/FlateDecode':
-						size = (objs[obj]['/Width'],objs[obj]['/Height'])
-						mode = "RGB" if objs[obj]['/ColorSpace'] == '/DeviceRGB' else "P"
-						img = Image.frombytes(mode, size, objs[obj].getData())
-						yield ImageUtils.pil2opencv(img)
-					elif type(objs[obj]['/Filter']) is PyPDF2.generic.ArrayObject:
-						for f in objs[obj]['/Filter']:
-							if f == '/DCTDecode':
-								yield cv2.imdecode(np.frombuffer(objs[obj]._data, np.uint8), cv2.IMREAD_COLOR)
-							else:
-								raise Exception("Filter {} didn't implemented yet!".format(objs[obj]['/Filter']))
-					else:
-						raise Exception("Filter {} didn't implemented yet!".format(objs[obj]['/Filter']))
+			for image in page.images:
+				yield ImageUtils.pil2opencv(image.image.convert("RGB"))
 
 	@staticmethod
 	def getEncodeFile(filename):
 		import chardet
 		with open(filename, 'rb') as file:
-			raw = file.read(32)
+			raw = file.read()
 		return chardet.detect(raw)['encoding']
 
 	@staticmethod
