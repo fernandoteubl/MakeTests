@@ -1040,6 +1040,7 @@ class QuestionTrueOrFalse(QuestionMatrix):
 	correctionCriteriaDescription = None
 	labels                        = None
 	doubleCol                     = False
+	smallText                     = False
 
 	def makeSetup(self):
 		raise Exception("Method not implemented.")
@@ -1083,6 +1084,9 @@ class QuestionTrueOrFalse(QuestionMatrix):
 	def getQuestionTex(self, desc):
 		tex = self.questionDescription
 
+		if self.smallText:
+			tex += "\\begin{footnotesize}\n\\setlength{\\columnsep}{4mm}\n\\setlength{\\multicolsep}{1pt}\n"
+
 		if self.doubleCol:
 			tex += "\\begin{multicols}{2}\n"
 
@@ -1093,6 +1097,9 @@ class QuestionTrueOrFalse(QuestionMatrix):
 
 		if self.doubleCol:
 			tex += "\\end{multicols}\n"
+
+		if self.smallText:
+			tex += "\\end{footnotesize}\n"
 
 		tex += self.correctionCriteriaDescription
 
@@ -2613,7 +2620,8 @@ class MyQuestionMultipleChoice(QuestionMultipleChoice):
 from MakeTests import QuestionTrueOrFalse
 class MyQuestionTrueFalse(QuestionTrueOrFalse):
 	def makeSetup(self):
-		self.doubleCol = True # Use two columns for the questions
+		self.doubleCol = True  # Display the question list in two columns
+		self.smallText = True  # Use a smaller font for the question text
 		import random
 		grp1 = [
 			["True  AND True",  True],
