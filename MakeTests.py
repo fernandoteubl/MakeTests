@@ -1521,8 +1521,9 @@ class CorrectionManager:
 		self.save()
 	
 	def final_calc(self, questions_score):
-		exec(self.final_calc_str)
-		return eval('final_calc(questions_score, self.weight)')
+		namespace = {}
+		exec(self.final_calc_str, namespace)
+		return namespace['final_calc'](questions_score, self.weight)
 
 	def load(self):
 		import csv
